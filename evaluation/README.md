@@ -157,3 +157,18 @@ La copie MLflow adapte les URI des artefacts au disque local sans modifier la
 base originale ni le suivi des entraînements locaux précédents. Les checkpoints
 sont dans `original/experiences/`. Le rapport `verification.json` constate
 l’intégrité de la copie ; les limites d’exhaustivité figurent dans le notebook 03.
+
+## Mesure finale préparée après sélection
+
+Le candidat SFT v3 est figé avant la lecture du test. Le protocole versionné
+`protocole_test_final.json` conserve les empreintes des 262 QA et des 226 triages.
+`test_final.py` refuse d'autres données ou poids, appelle la même inférence et
+conserve prédictions, métriques et artefacts MLflow. Le DPO n'est ajouté que si
+ses poids originaux sont retrouvés et correspondent à leur empreinte.
+
+Le notebook `05_finalisation_colab.ipynb`, également déposé dans Drive, regroupe
+ces mesures avec la vérification vLLM dans un environnement Python séparé. Il ne
+relance aucun entraînement. Les sorties et les erreurs sont sauvegardées dans
+`evaluations/finalisation_20261105` sur Drive, puis réunies dans une archive.
+La synchronisation Drive précède la libération de la VM, même après une erreur
+si la sauvegarde peut être achevée. L'exécution GPU reste à confirmer.

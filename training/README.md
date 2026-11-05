@@ -49,8 +49,8 @@ dans la validation ou le test QA. Je dois les retirer avant un entraînement DPO
 et vérifier l'adéquation des préférences au triage ; les scores SFT ne justifient
 pas à eux seuls le lancement d'un DPO généraliste.
 
-Après les arrêts brutaux observés, j'effectue ces calculs sur Colab. Les traces
-locales restent documentées dans `monitoring/README.md`. Je sauvegarde résultats,
+Après les arrêts brutaux observés, j'effectue ces calculs sur Colab. Le diagnostic
+matériel local reste conservé hors des livrables versionnés. Je sauvegarde résultats,
 adaptateurs et suivi dans Drive avant de libérer l'environnement GPU.
 
 ## Partitions v3 et pilote DPO

@@ -9,6 +9,7 @@ Qwen3-1.7B-Base adapté avec LoRA. Le projet reste un prototype pédagogique.
 2. `evaluation/02_evaluation_initiale.ipynb` : socle, métriques et protocole.
 3. `evaluation/03_execution_colab.ipynb` : corrections, SFT, pilote DPO et comparaison.
 4. `serving/04_poc_et_deploiement.ipynb` : questionnaire, API, traces et préparation du déploiement.
+5. `evaluation/05_finalisation_colab.ipynb` : exécution groupée du test final et de la vérification vLLM, puis sauvegarde et libération du GPU.
 
 Le SFT v3 reste le candidat principal : le pilote DPO n'améliore pas le triage.
 La performance QA générale demeure très dégradée après la spécialisation. Les
@@ -27,3 +28,12 @@ Voir [le POC](serving/README.md), [l'évaluation](evaluation/README.md) et
 Les expériences Colab récupérées sont dans `data/colab_archive/`, avec une copie
 MLflow locale et un inventaire vérifié. La section 20 du notebook 03 décrit
 les accès et la récupération encore incomplète des derniers fichiers DPO.
+
+Le [pipeline GitHub Actions](https://github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162)
+a exécuté avec succès 35 tests, construit l'image Docker et publié le paquet
+vérifié sur le Space existant. Il utilise le secret `HF_TOKEN` du dépôt.
+
+Le [rapport technique](reports/rapport_technique_ocr14.md) et sa
+[version PDF](output/pdf/rapport_technique_ocr14.pdf) distinguent les résultats
+acquis des mesures finales encore à confirmer. Le prototype n'est pas présenté
+comme un système cliniquement validé ni comme un déploiement vLLM public permanent.

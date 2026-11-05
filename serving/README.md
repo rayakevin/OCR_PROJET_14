@@ -97,9 +97,11 @@ chargement du tokenizer. Je conserve le test clinique final fermé pendant
 ces essais. Aucune nouvelle mesure de qualité du modèle n'est encore issue
 de ce POC.
 
-Le workflow `.github/workflows/poc.yml` prépare les tests et la construction
-Docker à chaque push/PR. Il doit encore être exécuté sur GitHub après publication
-du code ; le serveur vLLM n'a pas encore été déployé et testé en cloud.
+Le workflow `.github/workflows/poc.yml` exécute 35 tests et construit Docker.
+Sur `main`, il publie ensuite une liste fermée de fichiers dans le Space existant
+et vérifie sa révision en fonctionnement. Le secret `HF_TOKEN` reste dans Actions.
+La [première exécution complète](https://github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162)
+est réussie. La vérification du serveur vLLM en cloud reste distincte et à réaliser.
 
 ## Démonstration gratuite sur Hugging Face
 
@@ -160,3 +162,16 @@ essai de génération directe a atteint le quota invité ZeroGPU : l’interface
 a affiché une indisponibilité, sans attribuer de priorité. Le parcours direct
 est testé sur CPU avec un double ; les deux inférences réelles antérieures
 restent les preuves du chargement et de la génération par le modèle.
+
+### Vérification ponctuelle sur Colab
+
+Le notebook `evaluation/05_finalisation_colab.ipynb` prépare un environnement
+vLLM 0.32.0 séparé de celui de l'évaluation Transformers. `verifier_colab.py`
+contrôle le LoRA, démarre vLLM et FastAPI, mesure trois cas fictifs, vérifie les
+traces et les refus HTTP, puis arrête les processus. Le notebook sauvegarde les
+résultats et synchronise Drive avant de rendre le GPU.
+
+Cette exécution reste à confirmer. Les appels prévus sont internes à une VM
+cloud temporaire : ils ne créent pas une URL vLLM publique persistante. La
+démonstration publique ZeroGPU conserve Transformers ; cet écart avec la forme
+d'hébergement demandée reste explicite dans le rapport.
