@@ -1,7 +1,7 @@
 # POC de triage médical bilingue
 ## Rapport technique et recommandations
 
-**OCR Projet 14 · 5 novembre 2026 · version de clôture en cours de vérification**
+**OCR Projet 14 · 5 novembre 2026 · bilan final du prototype et écarts documentés**
 
 Je construis un prototype de triage français / anglais basé sur Qwen3-1.7B-Base. Ma démarche relie la préparation des données, deux étapes de SFT LoRA, un pilote DPO et une démonstration traçable. Je distingue les résultats techniques, l'accord avec des annotations de modèles et une validation clinique, qui n'a pas été réalisée.
 
@@ -18,15 +18,16 @@ Je conserve le SFT triage v3 comme candidat principal, sélectionné sur validat
 | Pilote DPO | 256/64 paires ; 32 pas ; pas de gain de triage observé |
 | Démonstration | Space Hugging Face ZeroGPU fonctionnel ; deux inférences réelles FR/EN |
 | CI/CD | Tests, image Docker et déploiement Space réussis sur GitHub Actions |
-| Test final / vLLM | Protocole et scripts préparés ; exécution GPU à confirmer |
+| Test final | 976 prédictions conservées ; SFT : macro-F1 priorité 0,7858, urgents 88/98 |
+| API vLLM | Trois cas fictifs sur A100 40 Go ; médiane HTTP 514 ms ; une revue humaine |
 
-Je ne présente pas cette version du rapport comme une preuve de clôture complète : les mesures finales et la vérification vLLM doivent encore être ajoutées. Les derniers artefacts DPO font également l'objet d'une récupération complémentaire.
+Le test final et la vérification vLLM sont exécutés et leurs preuves récupérées. Deux limites de livraison subsistent : la démonstration publique utilise Transformers, et les poids finaux du pilote DPO sont absents de la sauvegarde Drive accessible. Je les documente sans revendiquer une conformité intégrale.
 
 ### Trajet de lecture
 
 Données et consensus → séparation des tâches → correction du protocole → comparaison SFT/DPO → architecture de démonstration → preuves et recommandations.
 
-Les notebooks 01 à 05 suivent cette démarche. Les corpus et les poids restent hors de Git ; les scripts, contrats, protocoles et notebooks sont versionnés dans le dépôt privé.
+Les notebooks 01 à 06 suivent cette démarche. Les corpus et les poids restent hors de Git ; les scripts, contrats, protocoles et notebooks sont versionnés dans le dépôt privé.
 
 <!-- page -->
 ## 1. Construire un corpus adapté à la tâche
@@ -135,9 +136,26 @@ La QA corrigée obtenait auparavant 59,54 % aux QCM et 0,3762 de F1 lexical. Sa 
 
 Le SFT v3 obtient 0,8180 de macro-F1 en français et 0,7229 en anglais. Pour quantifier l'incertitude dans une étude ultérieure, je rééchantillonnerais les cas par paire, car les deux langues ne sont pas indépendantes.
 
-### Test final : statut explicite
+<!-- page -->
+## 4 bis. Test final après sélection
 
-Le protocole est figé avant les calculs : 226 triages et 262 QA, décodage déterministe BF16, batch 32, EOS natif et limites de 192/256 tokens. Le candidat reste celui choisi sur validation. Les résultats finaux ne sont pas encore confirmés dans cette version du rapport.
+Le protocole est figé avant les calculs : 226 triages et 262 QA, décodage déterministe BF16, batch 32, EOS natif et limites de 192/256 tokens. Le candidat reste celui choisi sur validation. Je récupère les 976 prédictions (488 par modèle), vérifie leur ordre et recalcule les métriques localement : les résultats sont identiques aux rapports Colab. Le DPO n'est pas évalué sur ce test, car ses poids finaux sont absents de Drive.
+
+| Test figé | Socle | SFT triage v3 |
+|---|---|---|
+| Macro-F1 priorité | 0,0556 | 0,7858 |
+| Accuracy ESI | 3,10 % | 74,78 % |
+| ESI analysables | 10,62 % | 100 % |
+| Urgents retrouvés | 0/98 | 88/98 |
+| Accord ESI FR/EN | Aucune paire doublement analysable | 89/113 |
+| QCM corrects | 1/131 | 0/131 |
+| F1 lexical QA ouverte | 0,1376 | 0,0323 |
+
+Le gain sur le socle inclut l'apprentissage du format de réponse. Je ne l'interprète pas comme une mesure isolée de connaissances médicales. Le SFT retrouve 88 urgents sur 98 : les 10 sous-triages critiques concernent 7 cas distincts. Ils représentent 10,20 % des urgents de référence, contre 5 % sur validation. La macro-F1 globale légèrement supérieure ne signifie donc pas une meilleure reconnaissance des situations urgentes.
+
+La macro-F1 priorité est de 0,7804 en français et 0,7911 en anglais ; le rappel des urgents est respectivement de 42/49 et 46/49. Le classement relatif des langues change selon la partition. Les deux traductions d'un cas ne sont pas des observations indépendantes.
+
+L'absence de réponse QCM correcte confirme la perte de la capacité QA après la spécialisation. Je garde le modèle comme démonstrateur de triage et je propose des adaptateurs séparés comme expérience future. Aucun réglage ni nouvel entraînement n'est choisi à partir de ce test.
 
 <!-- page -->
 ## 5. Déployer un prototype traçable
@@ -149,7 +167,7 @@ Je sépare la collecte, le moteur d'inférence et l'audit. Le questionnaire dema
 | Voie | Chaîne | Statut |
 |---|---|---|
 | Démonstration gratuite | Gradio → Transformers / PEFT → ZeroGPU | Fonctionnelle sur Hugging Face |
-| API du POC | FastAPI → vLLM + LoRA → contrôle → SQLite | Code et Docker testés ; vérification GPU à confirmer |
+| API du POC | FastAPI → vLLM + LoRA → contrôle → SQLite | Vérifiée sur A100 40 Go, trois cas fictifs |
 
 Le sélecteur FR/EN traduit l'interface et réinitialise le cas. Les réglages exposent le mode guidé ou complet et les détails techniques ; les paramètres de génération restent fixés. Le même adaptateur est identifié par SHA256 avant publication.
 
@@ -159,11 +177,15 @@ Les traces SQLite sont en clair et ne sont pas immuables ; la clé partagée n'i
 
 ### Vérifications réalisées
 
-Les 46 tests locaux passent. La CI exécute un sous-ensemble de 35 tests sur les données, métriques, API et Space, puis construit Docker et publie le paquet autorisé. Le run GitHub Actions 42074793162 est réussi : la révision attendue du Space est effectivement démarrée. Aucun corpus ni secret n'est envoyé dans ce paquet.
+Les 47 tests locaux passent. Le premier run CI a exécuté 35 tests sur les données, métriques, API et Space, construit Docker et publié le paquet autorisé. Le test du conflit de port est ajouté à cette suite. Le run GitHub Actions 42074793162 est réussi : la révision attendue du Space est effectivement démarrée. Aucun corpus ni secret n'est envoyé dans ce paquet.
 
 Deux parcours fictifs FR/EN ont produit une inférence réelle : 5,115 s et 3,870 s côté serveur, appel ZeroGPU inclus. Il s'agit de deux observations, pas d'un test de charge. Un essai ultérieur du mode direct a atteint le quota invité ; l'interface a présenté une indisponibilité sans priorité.
 
-La démonstration permanente utilise Transformers. La vérification vLLM préparée sur Colab est temporaire et interne à la VM ; elle ne constitue pas un endpoint public persistant. Cet écart avec l'hébergement vLLM demandé doit rester explicite.
+La vérification vLLM réelle sur A100 40 Go mesure 6,935 s, 0,385 s et 0,514 s par requête HTTP, soit une médiane de 0,514 s. Le premier appel comprend potentiellement des initialisations. Les trois traces SQLite concordent avec les réponses ; les contrôles HTTP renvoient 401 sans clé, 422 pour une entrée invalide et une question pour un cas incomplet.
+
+Le cas anglais produit « delayed emergency » au lieu du libellé attendu « delayed urgency ». L'API retourne une revue humaine sans priorité. Cette observation montre une fragilité du contrat linguistique ; je ne relâche pas le contrôle après le test. Trois requêtes ne prouvent ni la capacité en charge ni la pertinence clinique.
+
+La démonstration permanente utilise Transformers. L'essai vLLM est interne à une VM Colab temporaire, sans endpoint public persistant. Cet écart avec l'hébergement demandé reste explicite. Le conflit initial sur le port 8080 est corrigé en réservant un port libre transmis à Uvicorn ; un test CPU reproduit ce conflit.
 
 <!-- page -->
 ## 6. Conservation, limites et recommandations
@@ -174,11 +196,13 @@ Je récupère 363 fichiers Colab, soit environ 2,82 Go, avec contrôle des taill
 
 Les résultats du DPO sont disponibles, mais les derniers poids, le checkpoint 32 et la base après le DPO ne figuraient pas dans la sauvegarde distante accessible. La cause reste à établir. Je ne confonds pas un run observé avec la conservation complète de ses fichiers. La fermeture Colab attend maintenant la synchronisation Drive avant la libération de la VM.
 
-### Conditions restant à satisfaire
+Les quatre runs du test final sont récupérés dans une seconde copie MLflow locale. Les archives du test et de vLLM, les journaux et les traces SQLite sont conservés avec leurs empreintes. La nouvelle vérification Drive confirme l'absence des poids finaux DPO ; je conserve les résultats disponibles sans remplacer le checkpoint sélectionné par un autre.
+
+### Conditions et écarts restants
 
 | Niveau | Condition |
 |---|---|
-| Clôture technique | Mesures du test final, vérification vLLM réelle et récupération complémentaire DPO |
+| Preuves techniques | Test final et vLLM vérifiés ; récupération finale DPO incomplète |
 | Conformité au livrable cloud vLLM | Endpoint public vLLM persistant ou justification explicite de l'écart au cahier des charges |
 | Données | Clarification des licences et revue humaine de l'anonymisation |
 | Pertinence clinique | Évaluation indépendante par des professionnels, notamment des erreurs graves |
@@ -186,7 +210,7 @@ Les résultats du DPO sont disponibles, mais les derniers poids, le checkpoint 3
 
 ### Roadmap proposée
 
-1. Fermer les preuves techniques, conserver les résultats et présenter les limites sans transformer une vérification prévue en vérification accomplie.
+1. Préserver les preuves finales et expliquer les écarts : sauvegarde DPO incomplète et hébergement public Transformers. Ne pas relancer un entraînement pour masquer un résultat défavorable du test.
 2. Constituer une référence clinique indépendante : cas ambigus, urgences rares, informations absentes, négations et situations hors distribution.
 3. Réduire l'oubli QA en comparant des adaptateurs distincts ou une stratégie multi-tâche ; mesurer chaque tâche à chaque étape.
 4. Construire des préférences DPO réellement centrées sur le triage, revues cliniquement, puis comparer à budget et protocole constants.
@@ -205,6 +229,8 @@ Un modèle de 32B+ reste une piste de projection. Il ne corrige pas automatiquem
 | evaluation/03_execution_colab.ipynb | Corrections, SFT, DPO et choix sur validation |
 | serving/04_poc_et_deploiement.ipynb | Questionnaire, API, audit et déploiement |
 | evaluation/05_finalisation_colab.ipynb | Test figé, vérification vLLM et sauvegarde |
+| evaluation/06_verification_vllm_colab.ipynb | Reprise vLLM sur port libre, sans réévaluer le modèle |
+| reports/bilan_final_20261105.json | Synthèse des mesures et empreintes des preuves finales |
 | data/processed/partitions_v3 | Partitions nettoyées et manifeste d'exclusions |
 | data/evaluation/colab_sft_dpo_v3 | Prédictions et bilan de validation |
 | data/colab_archive/original | Fichiers distants conservés sans réécriture |
@@ -218,6 +244,6 @@ L'entraînement est séparé du déploiement : le workflow de publication vérif
 
 ### Sources et provenance
 
-Les notebooks 01 à 05, les manifestes de partitions, bilan_v3.json et les protocoles d'entraînement constituent les preuves locales. Les annotations proviennent de LLM ; la préparation du code et de la documentation est assistée par des outils d'IA. Je n'attribue pas à une revue clinique les contrôles automatiques effectués.
+Les notebooks 01 à 06, les manifestes de partitions, bilan_v3.json et les protocoles d'entraînement constituent les preuves locales. Les annotations proviennent de LLM ; la préparation du code et de la documentation est assistée par des outils d'IA. Je n'attribue pas à une revue clinique les contrôles automatiques effectués.
 
 Références : docs.vllm.ai/en/v0.32.0/getting_started/installation/gpu/ ; huggingface.co/docs/hub/spaces-zerogpu ; huggingface.co/docs/hub/spaces-github-actions. Démonstration : huggingface.co/spaces/rayakevin/ocr14-triage-fr-en. CI : github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162.

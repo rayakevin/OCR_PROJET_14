@@ -38,7 +38,7 @@ quelles ; remplir les champs ne démontre pas que le dossier est suffisant.
 Le formulaire produit une présentation différente des cas bruts d'évaluation.
 Je dois donc vérifier son effet sur des scénarios séparés. La conservation du
 prompt et de l'EOS ne suffit pas à garantir les mêmes sorties entre Transformers
-et vLLM : je vérifierai aussi cette transition avant le test final.
+et vLLM : je vérifie cette transition séparément sur trois cas fictifs ; cela ne démontre pas une équivalence des moteurs.
 
 ## API et intégration simulée
 
@@ -72,7 +72,7 @@ explique les limites. Les doubles de test sont explicitement identifiés : leurs
 résultats ne sont pas des prédictions du modèle. Le test du template emploie un
 vrai tokenizer miniature pour détecter une dépendance manquante à Jinja2.
 
-## Vérification vLLM à effectuer sur un environnement GPU
+## Reproduire la vérification vLLM sur un environnement GPU
 
 Je récupère depuis Drive le dossier
 `experiences/sft_dpo_v3_20261105/sft_triage/adapter`. Son fichier de poids doit
@@ -93,15 +93,14 @@ docker compose -f serving/compose.yaml --profile gpu down
 L'API écoute uniquement en boucle locale ; vLLM n'est pas publié sur l'hôte.
 Les volumes conservent l'audit et les caches. Le script de mesure ne teste ni
 la charge, ni la pertinence clinique ; la première requête peut inclure le
-chargement du tokenizer. Je conserve le test clinique final fermé pendant
-ces essais. Aucune nouvelle mesure de qualité du modèle n'est encore issue
-de ce POC.
+chargement du tokenizer. Les partitions de test final restent distinctes de ces cas fictifs. Cet essai
+porte sur le contrat technique et ne mesure pas la qualité clinique.
 
-Le workflow `.github/workflows/poc.yml` exécute 35 tests et construit Docker.
+Le workflow `.github/workflows/poc.yml` exécute désormais 36 tests et construit Docker.
 Sur `main`, il publie ensuite une liste fermée de fichiers dans le Space existant
 et vérifie sa révision en fonctionnement. Le secret `HF_TOKEN` reste dans Actions.
 La [première exécution complète](https://github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162)
-est réussie. La vérification du serveur vLLM en cloud reste distincte et à réaliser.
+est réussie. La vérification du serveur vLLM est également exécutée sur une VM Colab temporaire.
 
 ## Démonstration gratuite sur Hugging Face
 
@@ -143,7 +142,7 @@ Sur les deux essais du navigateur, l'étape finale a pris 5,115 s en français
 l'appel à ZeroGPU ; ce n'est ni une mesure isolée du calcul GPU, ni une garantie
 de latence. Les traces et le commit publié sont conservés dans
 `data/evaluation/poc/verification_space_reelle.json` et
-`data/deployment/hf_space_v1.publication.json`. Le test final du corpus reste fermé.
+`data/deployment/hf_space_v1.publication.json`. Le test final du corpus est mesuré séparément, après sélection sur validation.
 
 Références techniques : [LoRA avec vLLM](https://docs.vllm.ai/en/v0.32.0/features/lora/),
 [options du serveur](https://docs.vllm.ai/en/v0.32.0/cli/serve/),
@@ -171,7 +170,11 @@ contrôle le LoRA, démarre vLLM et FastAPI, mesure trois cas fictifs, vérifie 
 traces et les refus HTTP, puis arrête les processus. Le notebook sauvegarde les
 résultats et synchronise Drive avant de rendre le GPU.
 
-Cette exécution reste à confirmer. Les appels prévus sont internes à une VM
-cloud temporaire : ils ne créent pas une URL vLLM publique persistante. La
+L'exécution du notebook `06_verification_vllm_colab.ipynb` est confirmée sur A100
+40 Go. Après le conflit de port 8080, Uvicorn reçoit une socket réservée sur un
+port libre. Trois requêtes et leurs traces sont vérifiées : 6,935 s, 0,385 s et
+0,514 s. L'anglais produit « delayed emergency », hors contrat : l'API s'abstient
+et demande une revue humaine. Les contrôles 401, 422 et cas incomplet passent.
+Les appels restent internes à une VM cloud temporaire, sans URL publique persistante. La
 démonstration publique ZeroGPU conserve Transformers ; cet écart avec la forme
 d'hébergement demandée reste explicite dans le rapport.

@@ -158,7 +158,7 @@ base originale ni le suivi des entraînements locaux précédents. Les checkpoin
 sont dans `original/experiences/`. Le rapport `verification.json` constate
 l’intégrité de la copie ; les limites d’exhaustivité figurent dans le notebook 03.
 
-## Mesure finale préparée après sélection
+## Mesure finale après sélection
 
 Le candidat SFT v3 est figé avant la lecture du test. Le protocole versionné
 `protocole_test_final.json` conserve les empreintes des 262 QA et des 226 triages.
@@ -171,4 +171,16 @@ ces mesures avec la vérification vLLM dans un environnement Python séparé. Il
 relance aucun entraînement. Les sorties et les erreurs sont sauvegardées dans
 `evaluations/finalisation_20261105` sur Drive, puis réunies dans une archive.
 La synchronisation Drive précède la libération de la VM, même après une erreur
-si la sauvegarde peut être achevée. L'exécution GPU reste à confirmer.
+si la sauvegarde peut être achevée. L'exécution est terminée pour le socle et le SFT : 976 prédictions, quatre runs
+MLflow terminés et métriques recalculées identiques en local. Le DPO reste absent
+du test final faute de poids récupérables. La vérification API est reprise
+séparément dans le notebook 06, après correction du conflit de port Colab.
+
+Les preuves sont dans `data/colab_archive/finalisation_20261105/`, et la seconde
+copie MLflow, avec ses liens locaux, dans `data/colab_archive/local/mlflow_finalisation.db`.
+Le bilan publiable sans corpus est `reports/bilan_final_20261105.json`.
+
+```bash
+.venv/bin/mlflow ui --host 127.0.0.1 --port 5002 \
+  --backend-store-uri sqlite:///data/colab_archive/local/mlflow_finalisation.db
+```

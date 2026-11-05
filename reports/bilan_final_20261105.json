@@ -1,0 +1,157 @@
+{
+  "date": "2026-11-05",
+  "candidat": "sft_triage_v3",
+  "selection": "sur_validation_avant_test",
+  "revision": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
+  "adapter_sha256": "7ca4d0257eb7cab0bccf9427efabb47f3a66bde3ec8bb9d76567f3cda086b7e5",
+  "test": {
+    "socle": {
+      "triages": 226,
+      "qa": 262,
+      "macro_f1_priorite": 0.0556,
+      "accuracy_esi": 0.031,
+      "rappel_urgence_maximale": 0.0,
+      "sorties_esi_valides": 0.1062,
+      "accuracy_qcm": 0.0076,
+      "f1_lexical_qa": 0.1376,
+      "coherence_bilingue_esi": {
+        "paires": 113,
+        "paires_analysables": 0,
+        "taux_meme_prediction": null
+      },
+      "par_langue": {
+        "fr": {
+          "macro_f1_priorite": 0.068,
+          "rappel_urgence_maximale": 0.0
+        },
+        "en": {
+          "macro_f1_priorite": 0.0381,
+          "rappel_urgence_maximale": 0.0
+        }
+      }
+    },
+    "sft_triage_v3": {
+      "triages": 226,
+      "qa": 262,
+      "macro_f1_priorite": 0.7858,
+      "accuracy_esi": 0.7478,
+      "rappel_urgence_maximale": 0.898,
+      "sorties_esi_valides": 1.0,
+      "accuracy_qcm": 0.0,
+      "f1_lexical_qa": 0.0323,
+      "coherence_bilingue_esi": {
+        "paires": 113,
+        "paires_analysables": 113,
+        "taux_meme_prediction": 0.7876
+      },
+      "par_langue": {
+        "fr": {
+          "macro_f1_priorite": 0.7804,
+          "rappel_urgence_maximale": 0.8571
+        },
+        "en": {
+          "macro_f1_priorite": 0.7911,
+          "rappel_urgence_maximale": 0.9388
+        }
+      },
+      "sous_triages_critiques": {
+        "exemples": 10,
+        "cas_distincts": 7,
+        "urgents_reference": 98,
+        "retrouves": 88
+      }
+    }
+  },
+  "vllm": {
+    "date_utc": "2026-11-05T21:15:55.119125+00:00",
+    "cas": "fictifs_sans_labels_cliniques",
+    "mesures": [
+      {
+        "interaction_id": "585cba1d-eacd-4287-a0ee-eef75f120adc",
+        "langue": "fr",
+        "statut": "proposition_a_valider",
+        "latence_http_ms": 6935.38,
+        "latence_api_ms": 6880.41,
+        "usage": {
+          "prompt_tokens": 132,
+          "total_tokens": 204,
+          "completion_tokens": 72,
+          "prompt_tokens_details": null,
+          "completion_tokens_details": null
+        },
+        "modele": {
+          "id": "ocr14-sft-triage-v3",
+          "revision": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
+          "adapter_sha256": "7ca4d0257eb7cab0bccf9427efabb47f3a66bde3ec8bb9d76567f3cda086b7e5",
+          "format_sft": "template_sans_reflexion_eos_natif_v2",
+          "mlflow_run_id": "a63b597a3afd461588cddeb72375c856"
+        }
+      },
+      {
+        "interaction_id": "c425788a-9d51-48b1-a4d5-54d0b4374144",
+        "langue": "en",
+        "statut": "revue_humaine",
+        "latence_http_ms": 384.9,
+        "latence_api_ms": 329.07,
+        "usage": {
+          "prompt_tokens": 96,
+          "total_tokens": 147,
+          "completion_tokens": 51,
+          "prompt_tokens_details": null,
+          "completion_tokens_details": null
+        },
+        "modele": {
+          "id": "ocr14-sft-triage-v3",
+          "revision": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
+          "adapter_sha256": "7ca4d0257eb7cab0bccf9427efabb47f3a66bde3ec8bb9d76567f3cda086b7e5",
+          "format_sft": "template_sans_reflexion_eos_natif_v2",
+          "mlflow_run_id": "a63b597a3afd461588cddeb72375c856"
+        }
+      },
+      {
+        "interaction_id": "8977e6fb-6f15-46b0-bd68-318f9d4e7948",
+        "langue": "fr",
+        "statut": "proposition_a_valider",
+        "latence_http_ms": 513.98,
+        "latence_api_ms": 458.71,
+        "usage": {
+          "prompt_tokens": 142,
+          "total_tokens": 215,
+          "completion_tokens": 73,
+          "prompt_tokens_details": null,
+          "completion_tokens_details": null
+        },
+        "modele": {
+          "id": "ocr14-sft-triage-v3",
+          "revision": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
+          "adapter_sha256": "7ca4d0257eb7cab0bccf9427efabb47f3a66bde3ec8bb9d76567f3cda086b7e5",
+          "format_sft": "template_sans_reflexion_eos_natif_v2",
+          "mlflow_run_id": "a63b597a3afd461588cddeb72375c856"
+        }
+      }
+    ],
+    "latence_mediane_ms": 513.98,
+    "limite": "Trois requêtes séquentielles ; ni test de charge ni mesure de pertinence clinique.",
+    "controles_http": {
+      "sans_cle": 401,
+      "entree_invalide": 422,
+      "cas_incomplet": "a_completer"
+    },
+    "hebergement": "VM Colab temporaire ; appels HTTP internes, sans URL publique persistante."
+  },
+  "limites": [
+    "Annotations silver sans validation clinique",
+    "DPO final absent de Drive : test limité au socle et au SFT",
+    "API vLLM temporaire interne à Colab ; démo publique Transformers",
+    "Oubli QA après triage",
+    "Libellé anglais non canonique : abstention de l’API"
+  ],
+  "preuves": {
+    "test": "data/colab_archive/finalisation_20261105",
+    "test_archive_sha256": "cc483ff161d76893d1e878e1bc2312eea942cc7ff4a1aa640e5b9185747f0899",
+    "vllm": "data/colab_archive/vllm_reprise_20261105_211011",
+    "vllm_archive_sha256": "65f62c84e41503e16c6642a189bdf54252fc0c3c1127c9c7f214175c461ed602",
+    "mlflow": "data/colab_archive/local/mlflow_finalisation.db",
+    "verifications": "Métriques recalculées, identifiants alignés, SQLite intègre et trois traces concordantes"
+  }
+}

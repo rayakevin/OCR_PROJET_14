@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import secrets
 import signal
+import socket
 import subprocess
 import sys
 import time
@@ -50,16 +51,22 @@ def main():
                 cwd=racine, env=environnement, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         processus.append(moteur)
         attendre('http://127.0.0.1:8000/v1/models', environnement['VLLM_API_KEY'], moteur, 900)
-        with (args.output / 'api.log').open('w') as log:
+        # Colab peut déjà occuper 8080. Je réserve un port libre et transmets
+        # la socket à Uvicorn pour éviter qu'un autre processus ne le prenne.
+        with socket.socket() as ecoute, (args.output / 'api.log').open('w') as log:
+            ecoute.bind(('127.0.0.1', 0))
+            ecoute.listen(128)
+            url_api = f'http://127.0.0.1:{ecoute.getsockname()[1]}'
             api = subprocess.Popen([sys.executable, '-m', 'uvicorn', 'serving.api:app',
-                '--host', '127.0.0.1', '--port', '8080', '--no-access-log'], cwd=racine,
-                env=environnement, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+                '--fd', str(ecoute.fileno()), '--no-access-log'], cwd=racine,
+                env=environnement, stdout=log, stderr=subprocess.STDOUT,
+                pass_fds=(ecoute.fileno(),), start_new_session=True)
         processus.append(api)
-        attendre('http://127.0.0.1:8080/readyz', environnement['OCR14_API_KEY'], api, 60)
-        rapport = verifier('http://127.0.0.1:8080', environnement['OCR14_API_KEY'])
+        attendre(url_api + '/readyz', environnement['OCR14_API_KEY'], api, 60)
+        rapport = verifier(url_api, environnement['OCR14_API_KEY'])
         # Ces contrôles portent sur le contrat de l'API réelle, pas sur la pertinence médicale.
-        sans_cle = httpx.get('http://127.0.0.1:8080/readyz').status_code
-        with httpx.Client(base_url='http://127.0.0.1:8080',
+        sans_cle = httpx.get(url_api + '/readyz').status_code
+        with httpx.Client(base_url=url_api,
                 headers={'Authorization': 'Bearer ' + environnement['OCR14_API_KEY']}) as client:
             incomplet = client.post('/v1/consultations', json={'langue': 'fr', 'plainte': 'Gêne fictive'}).json()
             invalide = client.post('/v1/consultations', json={'langue': 'xx'}).status_code
