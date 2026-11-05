@@ -1,0 +1,45 @@
+name: POC — tests et déploiement
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: poc-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: serving/requirements.txt
+      - run: pip install -r serving/requirements.txt scikit-learn==1.9.1
+      - run: python -m unittest tests.test_pipeline_donnees tests.test_partitions_figees tests.test_evaluation tests.test_serving tests.test_space -v
+      - run: docker build -f serving/Dockerfile -t ocr14-api:ci .
+  deployer:
+    needs: verifier
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pydantic==2.14.1 huggingface-hub==1.33.0
+      - name: Publier et vérifier le Space gratuit
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          test -n "$HF_TOKEN" || { echo "Configurer le secret HF_TOKEN du dépôt pour le Space OCR14."; exit 1; }
+          python -m serving.space.deployer --preuve publication.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preuve-deploiement
+          path: publication.json

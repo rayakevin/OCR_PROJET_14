@@ -1,0 +1,47 @@
+services:
+  api:
+    image: ocr14-api:local
+    build:
+      context: ..
+      dockerfile: serving/Dockerfile
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      OCR14_API_KEY: ${OCR14_API_KEY:?Définir OCR14_API_KEY}
+      VLLM_API_KEY: ${VLLM_API_KEY:?Définir VLLM_API_KEY}
+      VLLM_URL: http://vllm:8000/v1
+      OCR14_AUDIT_PATH: /app/data/audit/interactions.sqlite3
+    volumes:
+      - audit:/app/data/audit
+      - tokenizer:/home/poc/.cache/huggingface
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  vllm:
+    image: vllm/vllm-openai:v0.32.0
+    profiles: [gpu]
+    gpus: all
+    shm_size: '4gb'
+    entrypoint: ["python3", "/configuration/lancer_vllm.py", "/modele/adaptateur"]
+    environment:
+      VLLM_API_KEY: ${VLLM_API_KEY:?Définir VLLM_API_KEY}
+      HF_TOKEN: ${HF_TOKEN:-}
+    volumes:
+      - ${OCR14_ADAPTER_DIR:?Définir le dossier du LoRA SFT v3}:/modele/adaptateur:ro
+      - ./lancer_vllm.py:/configuration/lancer_vllm.py:ro
+      - ./modele.json:/configuration/modele.json:ro
+      - poids:/root/.cache/huggingface
+    restart: 'no'
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import os,urllib.request; urllib.request.urlopen(urllib.request.Request('http://localhost:8000/health',headers={'Authorization':'Bearer '+os.environ['VLLM_API_KEY']}))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 300s
+      retries: 60
+volumes:
+  audit:
+  tokenizer:
+  poids:

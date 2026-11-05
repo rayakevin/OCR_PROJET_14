@@ -1,0 +1,9 @@
+spaces==0.51.3
+gradio==6.31.0
+torch==2.13.0
+transformers==5.22.1
+peft==0.21.2
+accelerate==1.15.0
+# Les extensions Gradio ajoutées par Spaces imposent Pydantic <= 2.12.5.
+pydantic==2.12.5
+jinja2==3.1.6

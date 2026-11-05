@@ -1,0 +1,38 @@
+{
+  "objectif": "Mesure finale après sélection sur validation ; aucun réajustement sur le test.",
+  "modeles": [
+    "socle",
+    "sft_triage_v3",
+    "dpo_pilote_v3_si_poids_disponibles"
+  ],
+  "candidat_principal": "sft_triage_v3",
+  "base": "Qwen/Qwen3-1.7B-Base",
+  "revision": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
+  "sft_sha256": "7ca4d0257eb7cab0bccf9427efabb47f3a66bde3ec8bb9d76567f3cda086b7e5",
+  "generation": {
+    "dtype": "bfloat16",
+    "batch_size": 32,
+    "do_sample": false,
+    "stop_token": "eos",
+    "qa_max_new_tokens": 256,
+    "triage_max_new_tokens": 192
+  },
+  "critere_principal": "macro_f1_priorite",
+  "criteres_secondaires": [
+    "rappel_urgence_maximale",
+    "sous_triage_critique_parmi_urgents",
+    "accuracy_esi",
+    "coherence_bilingue",
+    "QA_accuracy_QCM_et_F1_lexical"
+  ],
+  "partitions": {
+    "phase1_qa_test": {
+      "sha256": "d01c3be588b6c63eab25a00b888f2e686dd20ae6f944306279e38cc19be8a7a4",
+      "nombre": 262
+    },
+    "phase2_triage_test": {
+      "sha256": "e7a26d35308bd9e6b7477b19476063d44abe1d9f83051d37fe8c99651eeb864c",
+      "nombre": 226
+    }
+  }
+}

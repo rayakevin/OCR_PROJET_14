@@ -11,3 +11,16 @@ wheels/
 
 #Folders to ignore
 Ressources_OCR/
+data/
+AGENTS.md
+CLAUDE.md
+
+#Secrets
+.env
+# Modèles et suivi local des expériences
+models/
+mlruns/
+mlflow.db
+
+# Documentation personnelle : hors livrables versionnés
+documentation_personnelle/

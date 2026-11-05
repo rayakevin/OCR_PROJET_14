@@ -1,0 +1,16 @@
+{
+  "id": "ocr14-sft-triage-v3",
+  "socle": "Qwen/Qwen3-1.7B-Base",
+  "revision": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
+  "adapter_sha256": "7ca4d0257eb7cab0bccf9427efabb47f3a66bde3ec8bb9d76567f3cda086b7e5",
+  "mlflow_run_id": "a63b597a3afd461588cddeb72375c856",
+  "format_sft": "template_sans_reflexion_eos_natif_v2",
+  "dtype": "bfloat16",
+  "eos_token_id": 151643,
+  "max_input_tokens": 2048,
+  "max_new_tokens": 192,
+  "systemes": {
+    "fr": "Tu es un assistant médical bilingue destiné à un prototype pédagogique. Pour une présentation de patient, indique le niveau ESI, la priorité et une orientation prudente. Pour une question médicale, réponds directement et précisément. Ne remplace jamais l'évaluation d'un professionnel de santé.",
+    "en": "You are a bilingual medical assistant for an educational prototype. For a patient presentation, give the ESI level, priority, and cautious guidance. For a medical question, answer directly and precisely. Never replace assessment by a healthcare professional."
+  }
+}
