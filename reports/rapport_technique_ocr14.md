@@ -287,7 +287,7 @@ Les traces SQLite sont en clair et ne sont pas immuables ; la clé partagée n'i
 <!-- page -->
 ## 9.1 Vérifications réalisées
 
-Les tests locaux contrôlent données, métriques, formats, API et Space ; les tests du DPO ciblé ajoutent les contrôles de provenance, de séparation des cas et des garde-fous. Le premier run CI a exécuté 35 tests sur les données, métriques, API et Space, construit Docker et publié le paquet autorisé. Le test du conflit de port est ajouté à cette suite. Le run GitHub Actions 42074793162 est réussi : la révision attendue du Space est effectivement démarrée. Aucun corpus ni secret n'est envoyé dans ce paquet.
+Les tests locaux contrôlent données, métriques, formats, API et Space ; les tests du DPO ciblé ajoutent les contrôles de provenance, de séparation des cas et des garde-fous. La suite actuelle exécute 51 tests ; le premier run CI en avait exécuté 35 sur les données, métriques, API et Space, construit Docker et publié le paquet autorisé. Le test du conflit de port est ajouté à cette suite. Le run GitHub Actions 42074793162 est réussi : la révision attendue du Space est effectivement démarrée. Aucun corpus ni secret n'est envoyé dans ce paquet.
 
 Deux parcours fictifs FR/EN ont produit une inférence réelle : 5,115 s et 3,870 s côté serveur, appel ZeroGPU inclus. Il s'agit de deux observations, pas d'un test de charge. Un essai ultérieur du mode direct a atteint le quota invité ; l'interface a présenté une indisponibilité sans priorité.
 
@@ -314,14 +314,16 @@ Le run DPO ciblé du 6 novembre est récupéré séparément : 95 fichiers véri
 
 Depuis la racine du dépôt, `.venv/bin/python scripts/ouvrir_mlflow.py` démarre l'interface locale et ouvre le navigateur. L'option `--experience` sélectionne `mixte`, `poursuite`, `historique` `final` ou `dpo-cible`. Le serveur écoute uniquement sur 127.0.0.1 ; Ctrl+C l'arrête. Une copie de consultation protège les bases archivées.
 
-Les derniers checkpoints restent sur Drive et tous leurs artefacts ne sont pas encore rapatriés. Les courbes et paramètres présents dans SQLite sont consultables ; cela ne prouve pas que les fichiers associés sont tous disponibles. L'ouverture du serveur a révélé une incompatibilité avec SQLAlchemy 1.4 : le projet exige maintenant SQLAlchemy 2.x.
+Les checkpoints de la poursuite SFT restent sur Drive et ne sont pas tous rapatriés ; les fichiers du manifeste DPO ciblé sont, eux, entièrement récupérés. Les courbes et paramètres présents dans SQLite sont consultables ; cela ne prouve pas que les fichiers associés sont tous disponibles. L'ouverture du serveur a révélé une incompatibilité avec SQLAlchemy 1.4 : le projet exige maintenant SQLAlchemy 2.x.
+
+La revue des dépendances a conduit à actualiser Flask, Gunicorn et Waitress dans le verrou de travail. Les alertes liées à Datasets/fsspec et cryptography restent contraintes par les versions de Datasets et Presidio ; je ne déclare pas cet environnement prêt pour la production. MLflow reste local et les paquets du Space et de FastAPI sont séparés.
 
 ### Conditions et écarts restants
 
 | Niveau | Condition |
 |---|---|
 | Preuves techniques | Test final et vLLM vérifiés ; récupération finale DPO généraliste incomplète |
-| Conformité au livrable cloud vLLM | Endpoint public vLLM persistant ou justification explicite de l'écart au cahier des charges |
+| Conformité au livrable cloud vLLM | Endpoint public vLLM à activer et vérifier ; une justification seule ne remplace pas la preuve |
 | Données | Clarification des licences et revue humaine de l'anonymisation |
 | Pertinence clinique | Évaluation indépendante par des professionnels, notamment des erreurs graves |
 | Usage réel | Accès par rôle, journal sécurisé, supervision, protection des données et gouvernance |

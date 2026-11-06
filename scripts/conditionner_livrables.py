@@ -36,6 +36,19 @@ def conditionner(destination, paquet_hf):
     code=dossier/'Raya_Kevin_4_Endpoint_CICD_102026'
     for p in fichiers_code():
         cible=code/p.relative_to(RACINE);cible.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(p,cible)
+    # Les originaux gardent les SHA utilisés par les expériences ; le dépôt HF
+    # ajoute des null aux métadonnées et possède donc d'autres empreintes JSONL.
+    shutil.copytree(RACINE/'data/processed/partitions_v3', code/'data/processed/partitions_v3')
+    for experience in ('sft_mixte_20261106_091447','poursuite_mixte_20261106_095443',
+                       'dpo_triage_cible_20261106_132004'):
+        origine=RACINE/'data/colab_archive'/experience
+        cible=code/'data/colab_archive'/experience
+        cible.mkdir(parents=True)
+        shutil.copyfile(origine/'mlflow.db',cible/'mlflow.db')
+        # Les métriques et artefacts légers rendent la démonstration MLflow portable.
+        # Les poids sont livrés séparément pour éviter de les dupliquer dans le ZIP.
+        for sous in ('validation','artefacts_mlflow','paires'):
+            if (origine/sous).exists():shutil.copytree(origine/sous,cible/sous)
     oral=dossier/'Raya_Kevin_5_Support_oral_102026';oral.mkdir()
     for source,nom_sortie in [('output/support_soutenance.html','support_soutenance.html'),
                              ('reports/plan_soutenance.md','plan_soutenance.md')]:
@@ -56,6 +69,9 @@ Les empreintes du manifeste identifient les fichiers effectivement inclus.
 3. Rapport technique : PDF de 15 pages, inférieur à la limite de 20.
 4. Code, notebooks et CI/CD : instructions dans le README ; données et poids à
    replacer selon les chemins documentés pour reconstruire l'environnement.
+   Les partitions v3 originales sont incluses sous data/processed ; les bases
+   MLflow mixte, poursuite et DPO ciblé sous data/colab_archive. Leurs métriques
+   restent consultables ; les poids sont dans le deuxième livrable.
 5. Support d'oral : page HTML autonome et plan de quinze minutes.
 
 Démonstration : https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en

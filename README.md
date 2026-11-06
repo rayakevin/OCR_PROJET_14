@@ -42,8 +42,8 @@ Les expériences Colab récupérées sont dans `data/colab_archive/`, avec une c
 MLflow locale et un inventaire vérifié. La section 20 du notebook 03 décrit
 les accès et la récupération encore incomplète des derniers fichiers DPO.
 
-Le [pipeline GitHub Actions](https://github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162)
-a exécuté avec succès 35 tests, construit l'image Docker et publié le paquet
+Le [pipeline GitHub Actions](https://github.com/rayakevin/OCR_PROJET_14/actions/workflows/poc.yml)
+a exécuté avec succès 51 tests, construit l'image Docker et publié le paquet
 vérifié sur le Space existant. Il utilise le secret `HF_TOKEN` du dépôt.
 
 Le [rapport technique](reports/rapport_technique_ocr14.md) et sa
@@ -152,3 +152,15 @@ Pour préparer une nouvelle remise :
 
 Les dépôts HF sont privés ; le lien seul ne donne pas accès à l’évaluateur.
 Je ne rends pas les données publiques pour contourner cette question d’accès.
+
+
+## Périmètre des dépendances et de la sécurité
+
+La revue Dependabot a signalé des versions anciennes dans l’environnement de
+travail. Flask, Gunicorn et Waitress ont été actualisés dans le verrou de dépendances.
+Les alertes liées à `datasets` / `fsspec` et `cryptography` restent à traiter avec
+leurs contraintes amont (Datasets 4.7 et Presidio). Je conserve les versions des
+expériences pour la reproductibilité ; ce verrou n’est pas présenté comme un
+socle prêt pour la production. MLflow écoute seulement sur localhost. Le paquet
+du Space et l’image FastAPI ont leurs dépendances séparées ; cette distinction
+ne dispense pas d’un audit de sécurité avant un hébergement durable.
