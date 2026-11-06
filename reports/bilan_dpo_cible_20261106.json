@@ -1,0 +1,9 @@
+{
+  "fichiers_sha256_valides": 95,
+  "empreintes_differentes": [],
+  "fichiers_non_recuperes": [],
+  "predictions_validation_recalculees": 1500,
+  "rapports_identiques": 6,
+  "mlflow_integrite": "ok",
+  "decision": "DPO cible non retenu ; recul du rappel urgent et de la macro-F1"
+}

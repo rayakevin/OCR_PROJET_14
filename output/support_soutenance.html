@@ -1,0 +1,2527 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>OCR14 · Du corpus au triage</title>
+<style>
+:root{--ink:#122e3b;--muted:#566873;--paper:#f4f3ee;--card:#fff;--teal:#007e80;--lime:#d4eb84;--line:#d5deda;--orange:#ab431c}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,sans-serif}header{padding:24px 32px 16px;border-bottom:1px solid var(--line);background:var(--ink);color:white}header small{letter-spacing:.14em;text-transform:uppercase;color:var(--lime)}h1{font-size:clamp(24px,3vw,38px);margin:5px 0}header p{margin:0;color:#d5e1e1}nav{display:flex;gap:6px;padding:12px 20px;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--line)}button,select,a.link{font:inherit;border:1px solid var(--line);border-radius:8px;padding:9px 13px;background:white;color:var(--ink);cursor:pointer}button:hover,a.link:hover{border-color:var(--teal)}button[aria-current="step"],button.primary{background:var(--teal);color:#fff}button:disabled{opacity:.4;cursor:default}button:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #dcaa15;outline-offset:3px}main{max-width:1180px;margin:auto;padding:28px 32px}.panel[hidden]{display:none}h2{font-size:30px;line-height:1.2;margin:6px 0 15px}h3{font-size:19px;margin:0 0 8px}.eyebrow{color:var(--teal);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase}.lead{font-size:21px;max-width:900px;margin:8px 0 24px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}.card{background:var(--card);border:1px solid var(--line);padding:22px;border-radius:12px}.number{font-size:35px;font-weight:750;display:block;color:var(--teal)}p{margin:8px 0 14px}a{color:var(--teal);text-underline-offset:3px}.note{border-left:4px solid var(--teal);background:#e6efeb;padding:13px 18px;margin:20px 0}.warn{border-color:var(--orange);background:#fff0df}.muted,small{color:var(--muted)}header small{color:var(--lime)}.flow{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;margin:20px 0}.node{background:white;border:2px solid var(--line);padding:16px;border-radius:10px;flex:1;min-width:140px;position:relative}.node:not(:last-child):after{content:'→';position:absolute;right:-14px;top:38%;color:var(--teal);font-weight:bold;z-index:1}.node.active{border-color:var(--teal);background:#e1f0ec;box-shadow:0 0 0 3px #007e8012}.node.active:before{content:'';width:9px;height:9px;border-radius:50%;background:var(--teal);position:absolute;top:7px;right:8px;animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.25}}.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0}.tablewrap{overflow-x:auto}table{border-collapse:collapse;background:white;width:100%;font-size:14px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px 12px}th{background:#e9efeb}td:not(:first-child){font-variant-numeric:tabular-nums}details{background:white;border:1px solid var(--line);border-radius:9px;padding:12px 16px;margin:10px 0}summary{cursor:pointer;font-weight:650}code{background:#e8ece9;border-radius:4px;padding:2px 5px;font-size:13px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--ink);color:#e2f0eb;padding:16px;border-radius:10px;font-size:13px}footer{border-top:1px solid var(--line);padding:16px 32px;display:flex;justify-content:space-between;align-items:center;gap:15px}.chart{background:white;padding:18px;border:1px solid var(--line);border-radius:10px}.barrow{display:grid;grid-template-columns:minmax(170px,1fr) 2fr 60px;align-items:center;gap:12px;margin:13px 0}.track{background:#e7eeeb;height:17px;border-radius:4px}.bar{height:100%;background:var(--teal);border-radius:4px}.links{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}.link{text-decoration:none;display:inline-block}.tag{display:inline-block;padding:3px 8px;border-radius:5px;background:#e6efeb;font-size:12px}.timeline{border-left:3px solid var(--teal);padding-left:20px}.timeline p{margin-bottom:20px}.split{display:grid;grid-template-columns:1fr 1fr;gap:20px}svg{width:100%;height:auto}#step-description{min-height:155px}.print{margin-left:auto}@media(max-width:650px){main{padding:20px 16px}header{padding:20px 16px}.split{grid-template-columns:1fr}.barrow{grid-template-columns:130px 1fr 45px}h2{font-size:26px}.node{min-width:42%}footer{padding:14px}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}@media print{nav,footer,.controls,.print{display:none}.panel[hidden]{display:block}.panel{break-before:page}header{background:white;color:var(--ink)}header p{color:var(--ink)}main{padding:0}.card,details{break-inside:avoid}details>*{display:block}body{font-size:11pt;background:white}}
+</style></head><body>
+<header><small>Kevin Raya · AI Engineer · Projet 14</small><h1>Du corpus médical au prototype de triage</h1><p>Une démarche mesurée : construire, comparer, servir — et savoir refuser un modèle.</p></header>
+<nav aria-label="Parcours de soutenance" id="navigation"></nav>
+<main>
+<section class="panel" data-title="1 · Mission">
+<div class="eyebrow">00:00 → 01:30 · Le besoin</div><h2>Assister la qualification, garder la décision humaine</h2>
+<p class="lead">Je cherche à transformer une présentation de patient en proposition de priorité, en français et en anglais.</p>
+<div class="grid"><article class="card"><h3>Entrée</h3><p>Une plainte, son début, son évolution et le contexte disponible.</p><span class="tag">Cas fictifs uniquement</span></article><article class="card"><h3>Sortie</h3><p>Un niveau ESI, une priorité et une orientation à vérifier — ou une demande de complément / revue humaine.</p></article><article class="card"><h3>Hypothèse</h3><p>Un petit modèle spécialisé peut apprendre un format utile avec des moyens limités.</p></article></div>
+<div class="note warn"><strong>Ce que je mesure :</strong> l'accord avec des annotations de référence produites par des LLM. Je ne démontre ni sécurité clinique ni bénéfice pour des patients réels.</div>
+<details><summary>Pourquoi 1,7 milliard de paramètres et LoRA ?</summary><p>Je pars de Qwen3-1.7B-Base, conformément au socle retenu pour le projet. LoRA ajoute environ 17,43 millions de paramètres entraînables (environ 1 %), avec le socle gelé. Je réduis le coût d'adaptation et peux comparer des adaptateurs distincts.</p></details>
+</section>
+<section class="panel" data-title="2 · Données" hidden>
+<div class="eyebrow">01:30 → 04:00 · De l'exploration au dataset</div><h2>Je sépare connaissance médicale et décision de triage</h2>
+<div class="tablewrap"><table><thead><tr><th>Source observée</th><th>Format</th><th>Usage retenu après exploration</th><th>Licence constatée</th></tr></thead><tbody><tr><td>MediQAl · FR</td><td>Cas, QCM/QCU, réponses ouvertes</td><td>QA ; cas candidats au triage</td><td>CC BY 4.0</td></tr><tr><td>FrenchMedMCQA · FR</td><td>QCM courts</td><td>Exploration, exclu du corpus final</td><td>Non renseignée</td></tr><tr><td>MedQuAD · EN</td><td>Questions / réponses</td><td>QA générale</td><td>Non renseignée</td></tr><tr><td>UltraMedical-Preference · EN</td><td>Prompts + réponses préférée/rejetée</td><td>Cas de triage ; pilote DPO généraliste</td><td>MIT</td></tr></tbody></table></div>
+<div class="flow"><div class="node"><strong>Explorer</strong><br>Champs, langue, longueur, doublons</div><div class="node"><strong>Qualifier</strong><br>Cas exploitable à l'accueil ?</div><div class="node"><strong>Annoter</strong><br>Codex + Claude + Mistral</div><div class="node"><strong>Retenir</strong><br>Accord de 2 sur 3 ; traduire</div><div class="node"><strong>Séparer</strong><br>Un même cas dans un seul split</div></div>
+<div class="grid"><div class="card"><span class="number">4 974</span>Entrées finales après contrôle des fuites, pour une cible d'environ 5 000.</div><div class="card"><span class="number">2 622 / 2 352</span>QA / triage conservés dans les partitions finales v3.</div><div class="card"><span class="number">50 / 50</span>Français / anglais. Les traductions ne sont pas de nouveaux cas indépendants.</div></div>
+<details><summary>Splits, consensus et droits d'utilisation</summary><p>QA : 2 098 train, 262 validation, 262 test. Triage : 1 888 train, 238 validation, 226 test. Avant le contrôle des fuites, le triage comprenait 2 378 entrées issues de 1 189 cas (700 MediQAl et 489 UltraMedical).</p><p>Je garde l'accord sur la qualification, l'ESI exact et la priorité. L'accord majoritaire produit des labels <em>silver</em>, pas une expertise médicale. Je garde les variantes bilingues d'un cas dans la même partition. Une licence non renseignée ne vaut pas autorisation de redistribution publique : les restrictions et les provenances restent documentées.</p></details>
+</section>
+<section class="panel" data-title="3 · Entraînements" hidden>
+<div class="eyebrow">04:00 → 06:30 · Hypothèses et essais</div><h2>Le bon compromis vient du mélange des tâches</h2>
+<div class="timeline"><p><strong>1. Socle → QA → triage.</strong> J'adapte successivement les connaissances puis le classement. Le triage progresse, mais la QA s'effondre : oubli de la première tâche.</p><p><strong>2. Socle → SFT mixte.</strong> Je mélange QA et triage dès le début : trois époques, nouveau LoRA, checkpoint à chaque époque. Le QA revient et la macro-F1 de priorité progresse légèrement.</p><p><strong>3. Époque 3 → époque 10.</strong> Je reprends les poids avec un taux plus faible et un nouvel optimiseur/calendrier. Aucun checkpoint ne domine sur toutes les métriques ; prolonger n'est pas automatiquement améliorer.</p><p><strong>4. DPO généraliste, puis ciblé.</strong> J'apprends à préférer une réponse à une autre pour le même prompt. Les deux essais ne donnent pas le gain de triage recherché.</p></div>
+<div class="grid"><div class="card"><h3>SFT</h3><p>Je maximise la probabilité des tokens de la réponse attendue. Seule la réponse assistant contribue à la loss.</p><code>prompt → réponse de référence</code></div><div class="card"><h3>DPO</h3><p>Je favorise la réponse choisie par rapport à la rejetée, relativement à un modèle de référence gelé. Une loss DPO plus basse ne garantit pas un meilleur triage.</p><code>prompt → chosen / rejected</code></div><div class="card"><h3>Configuration</h3><p>LoRA r=16, α=32 ; BF16 ; batch effectif 16. SFT mixte : 10⁻⁴, 20 pas de warmup, décroissance cosinus. Poursuite : 2×10⁻⁵.</p></div></div>
+<details><summary>Pourquoi conserver le format, les poids et le tokenizer ?</summary><p>Le template sans réflexion, l'EOS natif et les tokens réellement supervisés ont été corrigés avant les comparaisons v3. Une sortie mal formatée peut donner un mauvais score sans mesurer uniquement la connaissance médicale. Je fige révision du socle, SHA de l'adaptateur, données et paramètres de génération.</p></details>
+</section>
+<section class="panel" data-title="4 · Résultats" hidden>
+<div class="eyebrow">06:30 → 09:00 · Comparer les capacités séparément</div><h2>Je choisis un compromis, pas la meilleure loss</h2>
+<div class="controls"><label>Expérience <select id="group"><option value="choix">Successif et mixte</option><option value="mixte">SFT · époques 1 à 3</option><option value="poursuite">Poursuite · époques 4 à 10</option><option value="dpo_cible">DPO ciblé · comparaison contrôlée</option></select></label><label>Métrique <select id="metric"><option value="rappel_maximale">Rappel des urgences maximales ↑</option><option value="macro_f1_priorite">Macro-F1 priorité ↑</option><option value="accuracy_qcm">Accuracy QCM ↑</option><option value="f1_lexical">F1 lexical QA ↑</option><option value="taux_sur_triage">Taux de sur-triage ↓</option><option value="coherence_bilingue">Cohérence bilingue ↑</option></select></label></div>
+<div class="chart" id="bars" aria-live="polite"></div><div class="tablewrap" id="scores"></div>
+<p class="muted">Validation : 262 QA + 238 entrées de triage, dont 100 de priorité maximale. Les 238 entrées représentent 119 paires FR/EN. Les pourcentages ne sont pas des preuves de sécurité.</p>
+<div class="note" id="interpretation"></div>
+<details><summary>Définitions et limites des métriques</summary><p><strong>Rappel urgent :</strong> urgences maximales retrouvées / urgences maximales de référence. <strong>Macro-F1 :</strong> moyenne des F1 par priorité, sans laisser la classe majoritaire dominer. <strong>Sur-triage :</strong> ESI prédit plus urgent que la référence / ensemble des entrées. <strong>F1 lexical :</strong> recouvrement des mots avec la réponse attendue, pas vérification clinique.</p><p>La QA de validation associe 131 QCM français et 131 questions ouvertes anglaises : langue et type de tâche sont confondus. Je ne conclus pas à une supériorité linguistique. Le test historique a déjà été consulté ; les nouvelles variantes demandent une confirmation sur de nouveaux cas indépendants.</p></details>
+</section>
+<section class="panel" data-title="5 · Pipeline en action" hidden>
+<div class="eyebrow">09:00 → 11:00 · Du clic à la réponse</div><h2>Le script collecte ; le modèle propose ; le code contrôle</h2>
+<div class="controls"><label>Parcours <select id="scenario"><option value="space">Space · questionnaire guidé</option><option value="api">API · cas complet vers vLLM</option><option value="auth">API · clé absente</option><option value="invalid">API · entrée invalide</option><option value="format">Modèle · sortie incohérente</option></select></label><button id="back-step">← Étape</button><button id="next-step" class="primary">Étape →</button><span id="step-counter"></span></div>
+<div class="flow" id="pipeline"><div class="node">1 · Saisie</div><div class="node">2 · Validation / collecte</div><div class="node">3 · Inférence</div><div class="node">4 · Contrôle</div><div class="node">5 · Trace / affichage</div></div>
+<div class="card" id="step-description" aria-live="polite"></div>
+<p class="muted">Animation explicative : aucun appel au modèle et aucune consommation GPU.</p>
+<div class="split"><details><summary>Combien de questions ?</summary><p>Le script demande plainte, début, évolution, contexte : quatre réponses. S'il détecte lexicalement douleur/pain dans la plainte, il ajoute le retentissement : cinq réponses. Ce détecteur ne comprend pas la négation. En mode « Cas complet », un seul envoi déclenche l'inférence. Aucun LangChain, LangGraph ou LLM ne décide de la question suivante.</p></details><details><summary>Les garde-fous sont-ils cliniques ?</summary><p>Non. Pydantic valide la structure ; le parseur exige un ESI, une priorité cohérente, une orientation et une fin de génération correcte. Une réponse bien formée peut rester médicalement fausse. La revue humaine reste nécessaire.</p></details></div>
+</section>
+<section class="panel" data-title="6 · Démo & architecture" hidden>
+<div class="eyebrow">11:00 → 13:00 · Montrer le produit et ses preuves</div><h2>Deux voies d'inférence, des responsabilités explicites</h2>
+<div class="grid"><article class="card"><h3>Démo publique</h3><p>Gradio → fonctions Python → Transformers + PEFT sur ZeroGPU → parseur → trace téléchargeable.</p><p><strong>Modèle actuellement servi :</strong> SFT successif v3. Les expérimentations mixtes/DPO ne changent pas silencieusement la démo.</p></article><article class="card"><h3>Voie API</h3><p>Client HTTP → FastAPI / Pydantic / Bearer → vLLM compatible OpenAI → contrôle → SQLite.</p><p>Vérifiée sur Colab avec trois requêtes internes. Son exposition cloud publique doit être activée et vérifiée séparément.</p></article><article class="card"><h3>Livraison</h3><p>GitHub Actions : tests sans GPU → construction Docker → publication contrôlée du Space → vérification de démarrage.</p><p>Socle et adaptateur sont identifiés par révision et empreinte SHA-256.</p></article></div>
+<div class="note"><strong>Démo en direct :</strong> je reviens à l'onglet Démonstration, saisis un cas fictif, montre la question suivante, puis la sortie et sa trace JSON. Je passe ensuite en anglais. Je distingue fluidité de l'interface et pertinence clinique.</div>
+<div class="links"><a class="link" href="https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en/tree/main" target="_blank" rel="noopener">Code du Space ↗</a><a class="link" href="https://huggingface.co/docs/hub/spaces-zerogpu" target="_blank" rel="noopener">Comment fonctionne ZeroGPU ↗</a><a class="link" href="https://github.com/rayakevin/OCR_PROJET_14/actions" target="_blank" rel="noopener">CI/CD · accès au dépôt requis ↗</a><a class="link" href="https://docs.vllm.ai/en/latest/serving/openai_compatible_server/" target="_blank" rel="noopener">Documentation vLLM ↗</a></div>
+<details><summary>La mesure de rapidité disponible</summary><p>Trois appels HTTP séquentiels sur A100 40 Go : environ 6,94 s, 0,38 s et 0,51 s ; médiane 0,514 s. Le premier appel inclut un effet de démarrage possible. Trois requêtes ne constituent ni test de charge ni garantie de latence en production.</p></details>
+</section>
+<section class="panel" data-title="7 · MLflow & preuves" hidden>
+<div class="eyebrow">13:00 → 14:00 · Reproductibilité</div><h2>Je relie une métrique à ses données et à ses poids</h2>
+<div class="controls"><label>Courbe archivée <select id="curve"></select></label></div><div class="chart"><svg id="loss-chart" viewBox="0 0 900 250" role="img" aria-label="Courbe de loss enregistrée dans MLflow"></svg><p id="curve-info" class="muted"></p></div>
+<p>Cette vue est un export statique des valeurs MLflow, sans prompts ni données individuelles. Pour explorer les runs réels sur mon poste :</p><pre>.venv/bin/python scripts/ouvrir_mlflow.py --experience dpo-cible</pre>
+<div class="links"><a class="link" href="https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en/resolve/main/output/pdf/rapport_technique_ocr14.pdf" target="_blank" rel="noopener">Rapport technique · PDF ↗</a><a class="link" href="https://huggingface.co/datasets/rayakevin/ocr14-medical-bilingue-v3" target="_blank" rel="noopener">Dataset versionné · privé ↗</a><a class="link" href="https://huggingface.co/rayakevin/ocr14-triage-lora-experiences" target="_blank" rel="noopener">Adaptateurs · privés ↗</a><a class="link" href="http://127.0.0.1:5000" target="_blank" rel="noopener">Ouvrir MLflow local ↗</a><a class="link" href="https://github.com/rayakevin/OCR_PROJET_14" target="_blank" rel="noopener">Dépôt du projet · accès requis ↗</a></div><p class="muted">Le lien MLflow fonctionne sur le poste où la commande est lancée. Ce n'est pas un serveur public du Space.</p>
+<details><summary>Ce que je conserve</summary><p>Partitions et empreintes, protocole et graine, versions du socle et de l'adaptateur, loss/paramètres MLflow, prédictions complètes et métriques recalculables. Les journaux d'API sont distincts du suivi d'entraînement. Les données et poids volumineux sont archivés hors Git.</p></details>
+</section>
+<section class="panel" data-title="8 · Décision" hidden>
+<div class="eyebrow">14:00 → 15:00 · Conclure et ouvrir la discussion</div><h2>Une faisabilité technique ; une validation clinique à construire</h2>
+<div class="grid"><article class="card"><h3>Ce que je retiens</h3><p>Le SFT mixte époque 3 est ma référence expérimentale pour conserver QA et triage. Le SFT successif reste déployé et retrouve davantage d'urgences sur validation.</p></article><article class="card"><h3>Ce que je refuse</h3><p>Le DPO ciblé réduit le sur-triage mais dégrade le rappel urgent et la macro-F1. Je ne le promeus pas. Davantage d'époques n'a pas résolu ce compromis.</p></article><article class="card"><h3>Prochaine étape utile</h3><p>Un jeu indépendant relu par des soignants, une analyse par cas et par langue, puis un éventuel DPO mieux équilibré. Je mesurerais aussi la charge, la disponibilité et les risques d'usage.</p></article></div>
+<div class="note warn"><strong>Avant tout usage réel :</strong> validation clinique, gouvernance des données, sécurité et intégration aux pratiques de soins. Je ne transforme pas le consensus de trois modèles en vérité médicale.</div>
+<p class="lead">Ma conclusion : l'adaptation fonctionne, mais la sélection doit suivre les erreurs métier, pas seulement la courbe d'entraînement.</p>
+<details><summary>Le résultat DPO en une phrase</summary><p>Sur la même validation, la référence retrouve 91 urgences maximales sur 100 ; après DPO, 87 puis 83. Les 355 paires d'entraînement contiennent 234 sur-triages, soit 66 %. Ce déséquilibre est une piste d'explication, sans preuve causale.</p></details>
+</section>
+</main><footer><button id="prev">← Précédent</button><span id="progress" aria-live="polite"></span><button id="next" class="primary">Suivant →</button></footer>
+<script>
+const DATA={
+  "date": "2026-11-06",
+  "split": "validation v3",
+  "qa": 262,
+  "triage": 238,
+  "limite": "Références silver ; 119 paires de triage FR/EN corrélées. Aucun test clinique.",
+  "lignes": [
+    {
+      "nom": "SFT successif v3",
+      "groupe": "historique",
+      "epoque": null,
+      "scores": {
+        "accuracy_qcm": 0.0382,
+        "f1_lexical": 0.0359,
+        "macro_f1_priorite": 0.7715,
+        "rappel_maximale": 0.95,
+        "accuracy_esi": 0.7311,
+        "taux_sur_triage": 0.2185,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7395
+      },
+      "sources": {
+        "data/colab_archive/original/experiences/sft_dpo_v3_20261105/comparaison/sft_triage/qa_validation_metriques.json": "4b78d9088fe0aa195f4df12414a3fcb238bcd6a62b57990d4b5a0f2007dfc896",
+        "data/colab_archive/original/experiences/sft_dpo_v3_20261105/comparaison/sft_triage/triage_validation_metriques.json": "fe8f6f07aa4f257d373aa972f355b08007507b8074fc0c64c2905c9036c43bcc"
+      }
+    },
+    {
+      "nom": "DPO généraliste",
+      "groupe": "historique",
+      "epoque": null,
+      "scores": {
+        "accuracy_qcm": 0.0382,
+        "f1_lexical": 0.0363,
+        "macro_f1_priorite": 0.7674,
+        "rappel_maximale": 0.95,
+        "accuracy_esi": 0.7269,
+        "taux_sur_triage": 0.2269,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7647
+      },
+      "sources": {
+        "data/evaluation/colab_sft_dpo_v3/comparaison/dpo_pilote/qa_validation_metriques.json": "fe777cee79b41e7c033470bb44031b27a0afd12af709ed756a3e0f870b4ee6c1",
+        "data/evaluation/colab_sft_dpo_v3/comparaison/dpo_pilote/triage_validation_metriques.json": "051868e180b2276b4e00a18f286390062b0f918d3f797d2882294ef9f12011d5"
+      }
+    },
+    {
+      "nom": "Mixte · époque 1",
+      "groupe": "mixte",
+      "epoque": 1,
+      "scores": {
+        "accuracy_qcm": 0.5344,
+        "f1_lexical": 0.3364,
+        "macro_f1_priorite": 0.668,
+        "rappel_maximale": 0.76,
+        "accuracy_esi": 0.5756,
+        "taux_sur_triage": 0.2269,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7479
+      },
+      "sources": {
+        "data/colab_archive/sft_mixte_20261106_091447/validation/checkpoint-250/qa_validation_metriques.json": "ab768dec11165f45189f5dc806e6b6b2188d0ce701d3ff8e24a7702397018641",
+        "data/colab_archive/sft_mixte_20261106_091447/validation/checkpoint-250/triage_validation_metriques.json": "af7998791894aac84d075751397a67bcf02773c5872b35028f02da67709b66bc"
+      }
+    },
+    {
+      "nom": "Mixte · époque 2",
+      "groupe": "mixte",
+      "epoque": 2,
+      "scores": {
+        "accuracy_qcm": 0.5802,
+        "f1_lexical": 0.3571,
+        "macro_f1_priorite": 0.772,
+        "rappel_maximale": 0.85,
+        "accuracy_esi": 0.7185,
+        "taux_sur_triage": 0.1597,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7395
+      },
+      "sources": {
+        "data/colab_archive/sft_mixte_20261106_091447/validation/checkpoint-500/qa_validation_metriques.json": "474364325fe136ad070da3ff330a95c674d6459a0a2c4f699843df28740ceada",
+        "data/colab_archive/sft_mixte_20261106_091447/validation/checkpoint-500/triage_validation_metriques.json": "52cf1df0f2a2e15176ba4fe72fe3698664354964728b1bebdbfaec4de9b4d3f9"
+      }
+    },
+    {
+      "nom": "Mixte · époque 3",
+      "groupe": "mixte",
+      "epoque": 3,
+      "scores": {
+        "accuracy_qcm": 0.5725,
+        "f1_lexical": 0.4341,
+        "macro_f1_priorite": 0.7874,
+        "rappel_maximale": 0.91,
+        "accuracy_esi": 0.7521,
+        "taux_sur_triage": 0.1807,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7899
+      },
+      "sources": {
+        "data/colab_archive/sft_mixte_20261106_091447/validation/checkpoint-750/qa_validation_metriques.json": "73276ed4a3505f940ec1740ed711ff0b06d110ed58c8ccc6c0588b90eab1f326",
+        "data/colab_archive/sft_mixte_20261106_091447/validation/checkpoint-750/triage_validation_metriques.json": "70787ff1585d908eee71240b77cb913ee13e3ff13f82a0fdbe04293d74d65d87"
+      }
+    },
+    {
+      "nom": "Poursuite · époque 4",
+      "groupe": "poursuite",
+      "epoque": 4,
+      "scores": {
+        "accuracy_qcm": 0.5496,
+        "f1_lexical": 0.4366,
+        "macro_f1_priorite": 0.7792,
+        "rappel_maximale": 0.82,
+        "accuracy_esi": 0.7311,
+        "taux_sur_triage": 0.1723,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7899
+      },
+      "sources": {
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-250/qa_validation_metriques.json": "11b800790d5ec54189d427ead48650e562d1a0fad408b435cc547fb066bd6a0f",
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-250/triage_validation_metriques.json": "da52d005049b200a4f65a18fdff9810e0c1980179a1fa33c2d8a6f24e4820f26"
+      }
+    },
+    {
+      "nom": "Poursuite · époque 5",
+      "groupe": "poursuite",
+      "epoque": 5,
+      "scores": {
+        "accuracy_qcm": 0.5649,
+        "f1_lexical": 0.4354,
+        "macro_f1_priorite": 0.805,
+        "rappel_maximale": 0.86,
+        "accuracy_esi": 0.7437,
+        "taux_sur_triage": 0.1429,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.6975
+      },
+      "sources": {
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-500/qa_validation_metriques.json": "ff7fb194e666b2f4e1144c94b30a7b9e289bab567f7a3a0ed30e8ca7b96b257b",
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-500/triage_validation_metriques.json": "f6f46f7e2325804721052ff41eb701a7c884f71743efae18f27bc3bddf34ae70"
+      }
+    },
+    {
+      "nom": "Poursuite · époque 6",
+      "groupe": "poursuite",
+      "epoque": 6,
+      "scores": {
+        "accuracy_qcm": 0.5573,
+        "f1_lexical": 0.4626,
+        "macro_f1_priorite": 0.7711,
+        "rappel_maximale": 0.92,
+        "accuracy_esi": 0.7269,
+        "taux_sur_triage": 0.1975,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7647
+      },
+      "sources": {
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-750/qa_validation_metriques.json": "5b354f07021c950dca1fd2bd7b031690eba131ee436786cd4fea7797eaafa9ef",
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-750/triage_validation_metriques.json": "2360be1fdf41776f2ccc0891c2a289591f70f37b4f9eae9e7f6dbbb667a2438f"
+      }
+    },
+    {
+      "nom": "Poursuite · époque 7",
+      "groupe": "poursuite",
+      "epoque": 7,
+      "scores": {
+        "accuracy_qcm": 0.5496,
+        "f1_lexical": 0.4686,
+        "macro_f1_priorite": 0.7824,
+        "rappel_maximale": 0.9,
+        "accuracy_esi": 0.7395,
+        "taux_sur_triage": 0.1807,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7143
+      },
+      "sources": {
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-1000/qa_validation_metriques.json": "4d490945a9c4276e6df18e7cb8d604b81f04ba490b6e8838e3168457c0705d0b",
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-1000/triage_validation_metriques.json": "de662756ded68d76ab7ad103e1b3ec07da6f310deb5bdea5c29d40756448ddc6"
+      }
+    },
+    {
+      "nom": "Poursuite · époque 8",
+      "groupe": "poursuite",
+      "epoque": 8,
+      "scores": {
+        "accuracy_qcm": 0.5267,
+        "f1_lexical": 0.4992,
+        "macro_f1_priorite": 0.7689,
+        "rappel_maximale": 0.9,
+        "accuracy_esi": 0.7143,
+        "taux_sur_triage": 0.1975,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7143
+      },
+      "sources": {
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-1250/qa_validation_metriques.json": "d3228bba15fce2330a3c2890dc39e6f523fd763fd8caeafe519c46fc4e174809",
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-1250/triage_validation_metriques.json": "e8116e74329d64aff9c461925efc0f976eee3f05f6fc60f155df91940f204558"
+      }
+    },
+    {
+      "nom": "Poursuite · époque 9",
+      "groupe": "poursuite",
+      "epoque": 9,
+      "scores": {
+        "accuracy_qcm": 0.5344,
+        "f1_lexical": 0.4743,
+        "macro_f1_priorite": 0.774,
+        "rappel_maximale": 0.89,
+        "accuracy_esi": 0.7227,
+        "taux_sur_triage": 0.1849,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7563
+      },
+      "sources": {
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-1500/qa_validation_metriques.json": "39338e527d5e094199f35e58ff344b9d46bd5d30544671feb3fd666795d91e18",
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-1500/triage_validation_metriques.json": "5aeaaac20343162c49da2a42a5193b0a1f712e3cdae5d952cd6b3e8a7cbb282b"
+      }
+    },
+    {
+      "nom": "Poursuite · époque 10",
+      "groupe": "poursuite",
+      "epoque": 10,
+      "scores": {
+        "accuracy_qcm": 0.5344,
+        "f1_lexical": 0.4798,
+        "macro_f1_priorite": 0.774,
+        "rappel_maximale": 0.89,
+        "accuracy_esi": 0.7185,
+        "taux_sur_triage": 0.1849,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7143
+      },
+      "sources": {
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-1750/qa_validation_metriques.json": "7774705c756870dd8428d135c4f3fd20479caf0da03fd954b3ef04bb8a185186",
+        "data/colab_archive/poursuite_mixte_20261106_095443/validation/checkpoint-1750/triage_validation_metriques.json": "c928661b4a417d21d37048720468ab58122ab3a1d832c9db374641cafca92b4d"
+      }
+    },
+    {
+      "nom": "Référence mixte réévaluée",
+      "groupe": "dpo_cible",
+      "epoque": null,
+      "scores": {
+        "accuracy_qcm": 0.5649,
+        "f1_lexical": 0.4322,
+        "macro_f1_priorite": 0.7875,
+        "rappel_maximale": 0.91,
+        "accuracy_esi": 0.7479,
+        "taux_sur_triage": 0.1849,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7815
+      },
+      "sources": {
+        "data/colab_archive/dpo_triage_cible_20261106_132004/validation/sft_mixte_epoque3/qa_validation_metriques.json": "2303792449f4be3837a2a0b458b496ad6ec977185d4d3e765a219de039afca59",
+        "data/colab_archive/dpo_triage_cible_20261106_132004/validation/sft_mixte_epoque3/triage_validation_metriques.json": "1e2c7280d8edc768b7ddadc1a85808bbc7cf008aaaed8bb8754c258e0f40dde5"
+      }
+    },
+    {
+      "nom": "DPO ciblé · 16 pas",
+      "groupe": "dpo_cible",
+      "epoque": null,
+      "scores": {
+        "accuracy_qcm": 0.6031,
+        "f1_lexical": 0.4371,
+        "macro_f1_priorite": 0.7457,
+        "rappel_maximale": 0.87,
+        "accuracy_esi": 0.7101,
+        "taux_sur_triage": 0.1471,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7479
+      },
+      "sources": {
+        "data/colab_archive/dpo_triage_cible_20261106_132004/validation/dpo_pas_16/qa_validation_metriques.json": "92349307368c180f6d31bea4eb8acc7a30601b61be87614b5e35f5691115136e",
+        "data/colab_archive/dpo_triage_cible_20261106_132004/validation/dpo_pas_16/triage_validation_metriques.json": "5c24b360c6fdee3fd27b063f581100d61061992ff89e71ddaee5c3cf703ccc22"
+      }
+    },
+    {
+      "nom": "DPO ciblé · 32 pas",
+      "groupe": "dpo_cible",
+      "epoque": null,
+      "scores": {
+        "accuracy_qcm": 0.5878,
+        "f1_lexical": 0.4333,
+        "macro_f1_priorite": 0.7373,
+        "rappel_maximale": 0.83,
+        "accuracy_esi": 0.6975,
+        "taux_sur_triage": 0.1218,
+        "esi_analysable": 1.0,
+        "coherence_bilingue": 0.7143
+      },
+      "sources": {
+        "data/colab_archive/dpo_triage_cible_20261106_132004/validation/dpo_pas_32/qa_validation_metriques.json": "8072dbd1ecebdaa9a110c18340df8a57163b417a0549a240eb55e5c465d2556e",
+        "data/colab_archive/dpo_triage_cible_20261106_132004/validation/dpo_pas_32/triage_validation_metriques.json": "e8114dd4e8a1a71afc97178f71fc46630b1427ccbedce544e5849a0eace5e224"
+      }
+    }
+  ],
+  "courbes_mlflow": [
+    {
+      "experience": "sft_mixte_20261106_091447",
+      "run_id": "e81754a47cfd462289cddcec4155e6a5",
+      "metrique": "eval_loss",
+      "points": [
+        [
+          250,
+          0.5595143437385559
+        ],
+        [
+          500,
+          0.5262706279754639
+        ],
+        [
+          750,
+          0.5264570116996765
+        ],
+        [
+          750,
+          0.5262706279754639
+        ]
+      ]
+    },
+    {
+      "experience": "sft_mixte_20261106_091447",
+      "run_id": "e81754a47cfd462289cddcec4155e6a5",
+      "metrique": "loss",
+      "points": [
+        [
+          1,
+          2.1368887424468994
+        ],
+        [
+          5,
+          2.129502534866333
+        ],
+        [
+          10,
+          1.933575439453125
+        ],
+        [
+          15,
+          1.7090791702270507
+        ],
+        [
+          20,
+          1.6087375640869142
+        ],
+        [
+          25,
+          1.5154125213623046
+        ],
+        [
+          30,
+          1.280817985534668
+        ],
+        [
+          35,
+          1.3277103424072265
+        ],
+        [
+          40,
+          1.0691402435302735
+        ],
+        [
+          45,
+          0.8417745590209961
+        ],
+        [
+          50,
+          0.976812744140625
+        ],
+        [
+          55,
+          1.000045394897461
+        ],
+        [
+          60,
+          1.0949151992797852
+        ],
+        [
+          65,
+          0.8487344741821289
+        ],
+        [
+          70,
+          0.6921561241149903
+        ],
+        [
+          75,
+          0.6680967807769775
+        ],
+        [
+          80,
+          0.8239177703857422
+        ],
+        [
+          85,
+          0.8183954238891602
+        ],
+        [
+          90,
+          0.9360554695129395
+        ],
+        [
+          95,
+          0.8034050941467286
+        ],
+        [
+          100,
+          0.7189935684204102
+        ],
+        [
+          105,
+          0.6957736015319824
+        ],
+        [
+          110,
+          0.5827836036682129
+        ],
+        [
+          115,
+          0.9448958396911621
+        ],
+        [
+          120,
+          0.560929536819458
+        ],
+        [
+          125,
+          0.41464929580688475
+        ],
+        [
+          130,
+          0.632618522644043
+        ],
+        [
+          135,
+          0.8842340469360351
+        ],
+        [
+          140,
+          0.6234128475189209
+        ],
+        [
+          145,
+          0.5520243167877197
+        ],
+        [
+          150,
+          0.7862500190734864
+        ],
+        [
+          155,
+          0.6185649871826172
+        ],
+        [
+          160,
+          1.0060792922973634
+        ],
+        [
+          165,
+          0.5460010528564453
+        ],
+        [
+          170,
+          0.6340199947357178
+        ],
+        [
+          175,
+          0.5786669254302979
+        ],
+        [
+          180,
+          0.8399602890014648
+        ],
+        [
+          185,
+          0.630853271484375
+        ],
+        [
+          190,
+          0.688239049911499
+        ],
+        [
+          195,
+          0.7983150959014893
+        ],
+        [
+          200,
+          0.6948476314544678
+        ],
+        [
+          205,
+          0.63145751953125
+        ],
+        [
+          210,
+          0.846977424621582
+        ],
+        [
+          215,
+          0.5353678226470947
+        ],
+        [
+          220,
+          0.6957867622375489
+        ],
+        [
+          225,
+          0.5893458843231201
+        ],
+        [
+          230,
+          0.7254924297332763
+        ],
+        [
+          235,
+          0.7123157024383545
+        ],
+        [
+          240,
+          0.8590565681457519
+        ],
+        [
+          245,
+          0.5411839008331298
+        ],
+        [
+          250,
+          0.5655731201171875
+        ],
+        [
+          255,
+          0.758744192123413
+        ],
+        [
+          260,
+          0.671512508392334
+        ],
+        [
+          265,
+          0.6746458530426025
+        ],
+        [
+          270,
+          0.7334891319274902
+        ],
+        [
+          275,
+          0.49923181533813477
+        ],
+        [
+          280,
+          0.4936936378479004
+        ],
+        [
+          285,
+          0.5919211387634278
+        ],
+        [
+          290,
+          0.6064198970794678
+        ],
+        [
+          295,
+          0.7274270057678223
+        ],
+        [
+          300,
+          0.6734302520751954
+        ],
+        [
+          305,
+          0.7374556064605713
+        ],
+        [
+          310,
+          0.6621199131011963
+        ],
+        [
+          315,
+          0.6177280902862549
+        ],
+        [
+          320,
+          0.7950710773468017
+        ],
+        [
+          325,
+          0.5395651817321777
+        ],
+        [
+          330,
+          0.6069627285003663
+        ],
+        [
+          335,
+          0.5946820735931396
+        ],
+        [
+          340,
+          0.5374435424804688
+        ],
+        [
+          345,
+          0.7255588054656983
+        ],
+        [
+          350,
+          0.554053544998169
+        ],
+        [
+          355,
+          0.5412592411041259
+        ],
+        [
+          360,
+          0.4567867755889893
+        ],
+        [
+          365,
+          0.505871057510376
+        ],
+        [
+          370,
+          0.6878839492797851
+        ],
+        [
+          375,
+          0.5630353927612305
+        ],
+        [
+          380,
+          0.657445240020752
+        ],
+        [
+          385,
+          0.7695756912231445
+        ],
+        [
+          390,
+          0.47637109756469725
+        ],
+        [
+          395,
+          0.7804736137390137
+        ],
+        [
+          400,
+          0.7124756813049317
+        ],
+        [
+          405,
+          0.7922873497009277
+        ],
+        [
+          410,
+          0.6518198013305664
+        ],
+        [
+          415,
+          0.6834071159362793
+        ],
+        [
+          420,
+          0.6352605819702148
+        ],
+        [
+          425,
+          0.6830214023590088
+        ],
+        [
+          430,
+          0.49347634315490724
+        ],
+        [
+          435,
+          0.7366420745849609
+        ],
+        [
+          440,
+          0.5790723323822021
+        ],
+        [
+          445,
+          0.638253116607666
+        ],
+        [
+          450,
+          0.4969947814941406
+        ],
+        [
+          455,
+          0.6574964046478271
+        ],
+        [
+          460,
+          0.3955981254577637
+        ],
+        [
+          465,
+          0.5722282409667969
+        ],
+        [
+          470,
+          0.5323173046112061
+        ],
+        [
+          475,
+          0.6623601913452148
+        ],
+        [
+          480,
+          0.5414276599884034
+        ],
+        [
+          485,
+          0.63142991065979
+        ],
+        [
+          490,
+          0.6543959617614746
+        ],
+        [
+          495,
+          0.5267328262329102
+        ],
+        [
+          500,
+          0.6983098030090332
+        ],
+        [
+          505,
+          0.47550487518310547
+        ],
+        [
+          510,
+          0.44309296607971194
+        ],
+        [
+          515,
+          0.5992885589599609
+        ],
+        [
+          520,
+          0.6424988269805908
+        ],
+        [
+          525,
+          0.6568577766418457
+        ],
+        [
+          530,
+          0.7751109600067139
+        ],
+        [
+          535,
+          0.629831075668335
+        ],
+        [
+          540,
+          0.6338953971862793
+        ],
+        [
+          545,
+          0.5690850734710693
+        ],
+        [
+          550,
+          0.470949125289917
+        ],
+        [
+          555,
+          0.5105587005615234
+        ],
+        [
+          560,
+          0.5094832420349121
+        ],
+        [
+          565,
+          0.6706315517425537
+        ],
+        [
+          570,
+          0.5666890621185303
+        ],
+        [
+          575,
+          0.37744319438934326
+        ],
+        [
+          580,
+          0.3883295774459839
+        ],
+        [
+          585,
+          0.5595076084136963
+        ],
+        [
+          590,
+          0.7871508121490478
+        ],
+        [
+          595,
+          0.6326874256134033
+        ],
+        [
+          600,
+          0.5324581146240235
+        ],
+        [
+          605,
+          0.5934464454650878
+        ],
+        [
+          610,
+          0.7393184185028077
+        ],
+        [
+          615,
+          0.5483026504516602
+        ],
+        [
+          620,
+          0.70632004737854
+        ],
+        [
+          625,
+          0.5122522830963134
+        ],
+        [
+          630,
+          0.5083144187927247
+        ],
+        [
+          635,
+          0.47110300064086913
+        ],
+        [
+          640,
+          0.4538881778717041
+        ],
+        [
+          645,
+          0.5752167701721191
+        ],
+        [
+          650,
+          0.7175622463226319
+        ],
+        [
+          655,
+          0.41974501609802245
+        ],
+        [
+          660,
+          0.5602584838867187
+        ],
+        [
+          665,
+          0.5140316486358643
+        ],
+        [
+          670,
+          0.5424694538116455
+        ],
+        [
+          675,
+          0.5553816318511963
+        ],
+        [
+          680,
+          0.509201192855835
+        ],
+        [
+          685,
+          0.6108001232147217
+        ],
+        [
+          690,
+          0.7433900833129883
+        ],
+        [
+          695,
+          0.6137519359588623
+        ],
+        [
+          700,
+          0.6133437633514405
+        ],
+        [
+          705,
+          0.5074838638305664
+        ],
+        [
+          710,
+          0.5112614154815673
+        ],
+        [
+          715,
+          0.7918154716491699
+        ],
+        [
+          720,
+          0.5527751445770264
+        ],
+        [
+          725,
+          0.6743543148040771
+        ],
+        [
+          730,
+          0.457549524307251
+        ],
+        [
+          735,
+          0.6739636421203613
+        ],
+        [
+          740,
+          0.4298392295837402
+        ],
+        [
+          745,
+          0.5561660289764404
+        ],
+        [
+          750,
+          0.6238482475280762
+        ]
+      ]
+    },
+    {
+      "experience": "poursuite_mixte_20261106_095443",
+      "run_id": "6be2664f195e4718a53092693a64b0a5",
+      "metrique": "eval_loss",
+      "points": [
+        [
+          250,
+          0.47937506437301636
+        ],
+        [
+          500,
+          0.4799378514289856
+        ],
+        [
+          750,
+          0.4833373725414276
+        ],
+        [
+          1000,
+          0.49580180644989014
+        ],
+        [
+          1250,
+          0.5025448203086853
+        ],
+        [
+          1500,
+          0.510304868221283
+        ],
+        [
+          1750,
+          0.5115038156509399
+        ],
+        [
+          1750,
+          0.47937506437301636
+        ]
+      ]
+    },
+    {
+      "experience": "poursuite_mixte_20261106_095443",
+      "run_id": "6be2664f195e4718a53092693a64b0a5",
+      "metrique": "loss",
+      "points": [
+        [
+          1,
+          0.5591893196105957
+        ],
+        [
+          5,
+          0.46261218190193176
+        ],
+        [
+          10,
+          0.6482912063598633
+        ],
+        [
+          15,
+          0.6855878829956055
+        ],
+        [
+          20,
+          0.800194263458252
+        ],
+        [
+          25,
+          0.5297414302825928
+        ],
+        [
+          30,
+          0.6061906814575195
+        ],
+        [
+          35,
+          0.6481561183929443
+        ],
+        [
+          40,
+          0.5604284763336181
+        ],
+        [
+          45,
+          0.5027697086334229
+        ],
+        [
+          50,
+          0.5812997341156005
+        ],
+        [
+          55,
+          0.664424467086792
+        ],
+        [
+          60,
+          0.78589768409729
+        ],
+        [
+          65,
+          0.5653642177581787
+        ],
+        [
+          70,
+          0.433077335357666
+        ],
+        [
+          75,
+          0.432111120223999
+        ],
+        [
+          80,
+          0.6246590137481689
+        ],
+        [
+          85,
+          0.5907481193542481
+        ],
+        [
+          90,
+          0.7314776420593262
+        ],
+        [
+          95,
+          0.6096840381622315
+        ],
+        [
+          100,
+          0.4689952850341797
+        ],
+        [
+          105,
+          0.5357223987579346
+        ],
+        [
+          110,
+          0.3973757028579712
+        ],
+        [
+          115,
+          0.7748311042785645
+        ],
+        [
+          120,
+          0.40125370025634766
+        ],
+        [
+          125,
+          0.2828365802764893
+        ],
+        [
+          130,
+          0.473215389251709
+        ],
+        [
+          135,
+          0.6910792827606201
+        ],
+        [
+          140,
+          0.4455560684204102
+        ],
+        [
+          145,
+          0.3689753532409668
+        ],
+        [
+          150,
+          0.6108423709869385
+        ],
+        [
+          155,
+          0.45098724365234377
+        ],
+        [
+          160,
+          0.8384555816650391
+        ],
+        [
+          165,
+          0.4045119285583496
+        ],
+        [
+          170,
+          0.4698195457458496
+        ],
+        [
+          175,
+          0.4296844005584717
+        ],
+        [
+          180,
+          0.6768795490264893
+        ],
+        [
+          185,
+          0.4876712799072266
+        ],
+        [
+          190,
+          0.5143272876739502
+        ],
+        [
+          195,
+          0.6426827907562256
+        ],
+        [
+          200,
+          0.5518767356872558
+        ],
+        [
+          205,
+          0.4185473442077637
+        ],
+        [
+          210,
+          0.7018315315246582
+        ],
+        [
+          215,
+          0.3944349527359009
+        ],
+        [
+          220,
+          0.5624537467956543
+        ],
+        [
+          225,
+          0.4507768630981445
+        ],
+        [
+          230,
+          0.6047433376312256
+        ],
+        [
+          235,
+          0.5713546276092529
+        ],
+        [
+          240,
+          0.710692310333252
+        ],
+        [
+          245,
+          0.3846891403198242
+        ],
+        [
+          250,
+          0.42991390228271487
+        ],
+        [
+          255,
+          0.6547093391418457
+        ],
+        [
+          260,
+          0.5535822868347168
+        ],
+        [
+          265,
+          0.5433403491973877
+        ],
+        [
+          270,
+          0.6287471771240234
+        ],
+        [
+          275,
+          0.4053491115570068
+        ],
+        [
+          280,
+          0.38437180519104003
+        ],
+        [
+          285,
+          0.47304401397705076
+        ],
+        [
+          290,
+          0.4876409530639648
+        ],
+        [
+          295,
+          0.6123164176940918
+        ],
+        [
+          300,
+          0.5678233146667481
+        ],
+        [
+          305,
+          0.6184975624084472
+        ],
+        [
+          310,
+          0.5409475326538086
+        ],
+        [
+          315,
+          0.5107431411743164
+        ],
+        [
+          320,
+          0.7076780319213867
+        ],
+        [
+          325,
+          0.44250030517578126
+        ],
+        [
+          330,
+          0.5045818328857422
+        ],
+        [
+          335,
+          0.48465933799743655
+        ],
+        [
+          340,
+          0.42905449867248535
+        ],
+        [
+          345,
+          0.6231304168701172
+        ],
+        [
+          350,
+          0.44576501846313477
+        ],
+        [
+          355,
+          0.4550615310668945
+        ],
+        [
+          360,
+          0.3687287330627441
+        ],
+        [
+          365,
+          0.4039333343505859
+        ],
+        [
+          370,
+          0.5665307998657226
+        ],
+        [
+          375,
+          0.4637762069702148
+        ],
+        [
+          380,
+          0.5694258689880372
+        ],
+        [
+          385,
+          0.6760505676269531
+        ],
+        [
+          390,
+          0.40441112518310546
+        ],
+        [
+          395,
+          0.682265043258667
+        ],
+        [
+          400,
+          0.6115892887115478
+        ],
+        [
+          405,
+          0.7150393486022949
+        ],
+        [
+          410,
+          0.5524799346923828
+        ],
+        [
+          415,
+          0.5942917346954346
+        ],
+        [
+          420,
+          0.554579210281372
+        ],
+        [
+          425,
+          0.5897134304046631
+        ],
+        [
+          430,
+          0.4081212043762207
+        ],
+        [
+          435,
+          0.6530660629272461
+        ],
+        [
+          440,
+          0.4989769458770752
+        ],
+        [
+          445,
+          0.5605402946472168
+        ],
+        [
+          450,
+          0.4273120403289795
+        ],
+        [
+          455,
+          0.5778705596923828
+        ],
+        [
+          460,
+          0.35097360610961914
+        ],
+        [
+          465,
+          0.5016938209533691
+        ],
+        [
+          470,
+          0.4524382591247559
+        ],
+        [
+          475,
+          0.5888677597045898
+        ],
+        [
+          480,
+          0.47585349082946776
+        ],
+        [
+          485,
+          0.5465540885925293
+        ],
+        [
+          490,
+          0.5799982070922851
+        ],
+        [
+          495,
+          0.4707781791687012
+        ],
+        [
+          500,
+          0.6112777709960937
+        ],
+        [
+          505,
+          0.40151419639587405
+        ],
+        [
+          510,
+          0.38293492794036865
+        ],
+        [
+          515,
+          0.5245850086212158
+        ],
+        [
+          520,
+          0.5774242877960205
+        ],
+        [
+          525,
+          0.6006897449493408
+        ],
+        [
+          530,
+          0.7045729637145997
+        ],
+        [
+          535,
+          0.5447144508361816
+        ],
+        [
+          540,
+          0.5484844207763672
+        ],
+        [
+          545,
+          0.5092421531677246
+        ],
+        [
+          550,
+          0.4167039394378662
+        ],
+        [
+          555,
+          0.45721888542175293
+        ],
+        [
+          560,
+          0.45237011909484864
+        ],
+        [
+          565,
+          0.5991729736328125
+        ],
+        [
+          570,
+          0.5015458583831787
+        ],
+        [
+          575,
+          0.3195516347885132
+        ],
+        [
+          580,
+          0.32977824211120604
+        ],
+        [
+          585,
+          0.484922981262207
+        ],
+        [
+          590,
+          0.7272062301635742
+        ],
+        [
+          595,
+          0.5640772342681885
+        ],
+        [
+          600,
+          0.4747262954711914
+        ],
+        [
+          605,
+          0.539997148513794
+        ],
+        [
+          610,
+          0.6878128528594971
+        ],
+        [
+          615,
+          0.49410104751586914
+        ],
+        [
+          620,
+          0.6536530971527099
+        ],
+        [
+          625,
+          0.45204997062683105
+        ],
+        [
+          630,
+          0.4621886253356934
+        ],
+        [
+          635,
+          0.42032833099365235
+        ],
+        [
+          640,
+          0.4120297431945801
+        ],
+        [
+          645,
+          0.5229462623596192
+        ],
+        [
+          650,
+          0.6681928634643555
+        ],
+        [
+          655,
+          0.37164199352264404
+        ],
+        [
+          660,
+          0.510172176361084
+        ],
+        [
+          665,
+          0.46624174118041994
+        ],
+        [
+          670,
+          0.4997800350189209
+        ],
+        [
+          675,
+          0.5061685562133789
+        ],
+        [
+          680,
+          0.46343197822570803
+        ],
+        [
+          685,
+          0.5631096839904786
+        ],
+        [
+          690,
+          0.6954414367675781
+        ],
+        [
+          695,
+          0.5616745471954345
+        ],
+        [
+          700,
+          0.5739341259002686
+        ],
+        [
+          705,
+          0.4599900245666504
+        ],
+        [
+          710,
+          0.4658195495605469
+        ],
+        [
+          715,
+          0.7144606590270997
+        ],
+        [
+          720,
+          0.5059229373931885
+        ],
+        [
+          725,
+          0.6207149982452392
+        ],
+        [
+          730,
+          0.4152369022369385
+        ],
+        [
+          735,
+          0.6270921230316162
+        ],
+        [
+          740,
+          0.39043383598327636
+        ],
+        [
+          745,
+          0.5075494766235351
+        ],
+        [
+          750,
+          0.5745545387268066
+        ],
+        [
+          755,
+          0.4732463836669922
+        ],
+        [
+          760,
+          0.4607266426086426
+        ],
+        [
+          765,
+          0.6008430480957031
+        ],
+        [
+          770,
+          0.5583581447601318
+        ],
+        [
+          775,
+          0.4857293128967285
+        ],
+        [
+          780,
+          0.5367605686187744
+        ],
+        [
+          785,
+          0.40186395645141604
+        ],
+        [
+          790,
+          0.5825719833374023
+        ],
+        [
+          795,
+          0.6009691238403321
+        ],
+        [
+          800,
+          0.5904153823852539
+        ],
+        [
+          805,
+          0.528370475769043
+        ],
+        [
+          810,
+          0.31467936038970945
+        ],
+        [
+          815,
+          0.640499210357666
+        ],
+        [
+          820,
+          0.42471656799316404
+        ],
+        [
+          825,
+          0.40403246879577637
+        ],
+        [
+          830,
+          0.4506887912750244
+        ],
+        [
+          835,
+          0.4063554763793945
+        ],
+        [
+          840,
+          0.47168521881103515
+        ],
+        [
+          845,
+          0.45292105674743655
+        ],
+        [
+          850,
+          0.5240360260009765
+        ],
+        [
+          855,
+          0.3665473222732544
+        ],
+        [
+          860,
+          0.7135810375213623
+        ],
+        [
+          865,
+          0.5769761562347412
+        ],
+        [
+          870,
+          0.4250165939331055
+        ],
+        [
+          875,
+          0.4287564277648926
+        ],
+        [
+          880,
+          0.4843109607696533
+        ],
+        [
+          885,
+          0.3934070587158203
+        ],
+        [
+          890,
+          0.38608698844909667
+        ],
+        [
+          895,
+          0.4866804122924805
+        ],
+        [
+          900,
+          0.459991455078125
+        ],
+        [
+          905,
+          0.42607755661010743
+        ],
+        [
+          910,
+          0.5473012924194336
+        ],
+        [
+          915,
+          0.44144635200500487
+        ],
+        [
+          920,
+          0.5711182117462158
+        ],
+        [
+          925,
+          0.5091688156127929
+        ],
+        [
+          930,
+          0.5105604648590087
+        ],
+        [
+          935,
+          0.3753806114196777
+        ],
+        [
+          940,
+          0.5334495067596435
+        ],
+        [
+          945,
+          0.5961158752441407
+        ],
+        [
+          950,
+          0.4621263980865479
+        ],
+        [
+          955,
+          0.4664638042449951
+        ],
+        [
+          960,
+          0.4867996692657471
+        ],
+        [
+          965,
+          0.36771044731140134
+        ],
+        [
+          970,
+          0.5863173484802247
+        ],
+        [
+          975,
+          0.4494302749633789
+        ],
+        [
+          980,
+          0.37884936332702634
+        ],
+        [
+          985,
+          0.549091386795044
+        ],
+        [
+          990,
+          0.6586937427520752
+        ],
+        [
+          995,
+          0.4792150020599365
+        ],
+        [
+          1000,
+          0.2976855278015137
+        ],
+        [
+          1005,
+          0.4069432258605957
+        ],
+        [
+          1010,
+          0.5297730445861817
+        ],
+        [
+          1015,
+          0.3416354417800903
+        ],
+        [
+          1020,
+          0.5413535118103028
+        ],
+        [
+          1025,
+          0.5630657196044921
+        ],
+        [
+          1030,
+          0.4812965393066406
+        ],
+        [
+          1035,
+          0.450105094909668
+        ],
+        [
+          1040,
+          0.5701242923736572
+        ],
+        [
+          1045,
+          0.3319994926452637
+        ],
+        [
+          1050,
+          0.5286152839660645
+        ],
+        [
+          1055,
+          0.3535349369049072
+        ],
+        [
+          1060,
+          0.47519474029541015
+        ],
+        [
+          1065,
+          0.48071579933166503
+        ],
+        [
+          1070,
+          0.4068756103515625
+        ],
+        [
+          1075,
+          0.5801806926727295
+        ],
+        [
+          1080,
+          0.6619451522827149
+        ],
+        [
+          1085,
+          0.5852349758148193
+        ],
+        [
+          1090,
+          0.5858435153961181
+        ],
+        [
+          1095,
+          0.4358762264251709
+        ],
+        [
+          1100,
+          0.4245797634124756
+        ],
+        [
+          1105,
+          0.29358174800872805
+        ],
+        [
+          1110,
+          0.5613054275512696
+        ],
+        [
+          1115,
+          0.5521252632141114
+        ],
+        [
+          1120,
+          0.4921590328216553
+        ],
+        [
+          1125,
+          0.5880677700042725
+        ],
+        [
+          1130,
+          0.5087259769439697
+        ],
+        [
+          1135,
+          0.43680386543273925
+        ],
+        [
+          1140,
+          0.5958340167999268
+        ],
+        [
+          1145,
+          0.5562898635864257
+        ],
+        [
+          1150,
+          0.614644718170166
+        ],
+        [
+          1155,
+          0.5489187240600586
+        ],
+        [
+          1160,
+          0.53932204246521
+        ],
+        [
+          1165,
+          0.391834020614624
+        ],
+        [
+          1170,
+          0.5093831062316895
+        ],
+        [
+          1175,
+          0.4919844150543213
+        ],
+        [
+          1180,
+          0.5725549697875977
+        ],
+        [
+          1185,
+          0.45600166320800783
+        ],
+        [
+          1190,
+          0.4623140811920166
+        ],
+        [
+          1195,
+          0.5632122039794922
+        ],
+        [
+          1200,
+          0.4492387294769287
+        ],
+        [
+          1205,
+          0.44394917488098146
+        ],
+        [
+          1210,
+          0.3971371650695801
+        ],
+        [
+          1215,
+          0.452894401550293
+        ],
+        [
+          1220,
+          0.5103605270385743
+        ],
+        [
+          1225,
+          0.34990222454071046
+        ],
+        [
+          1230,
+          0.5278836250305176
+        ],
+        [
+          1235,
+          0.5307611942291259
+        ],
+        [
+          1240,
+          0.3907618045806885
+        ],
+        [
+          1245,
+          0.27828619480133054
+        ],
+        [
+          1250,
+          0.3638829469680786
+        ],
+        [
+          1255,
+          0.40521726608276365
+        ],
+        [
+          1260,
+          0.5579366207122802
+        ],
+        [
+          1265,
+          0.5987142562866211
+        ],
+        [
+          1270,
+          0.29440453052520754
+        ],
+        [
+          1275,
+          0.46507415771484373
+        ],
+        [
+          1280,
+          0.43759541511535643
+        ],
+        [
+          1285,
+          0.5036209106445313
+        ],
+        [
+          1290,
+          0.3367729663848877
+        ],
+        [
+          1295,
+          0.6383030891418457
+        ],
+        [
+          1300,
+          0.392443323135376
+        ],
+        [
+          1305,
+          0.5791948795318603
+        ],
+        [
+          1310,
+          0.49976048469543455
+        ],
+        [
+          1315,
+          0.3571338176727295
+        ],
+        [
+          1320,
+          0.3098353147506714
+        ],
+        [
+          1325,
+          0.3133658170700073
+        ],
+        [
+          1330,
+          0.5602763175964356
+        ],
+        [
+          1335,
+          0.40921816825866697
+        ],
+        [
+          1340,
+          0.6260068893432618
+        ],
+        [
+          1345,
+          0.48217406272888186
+        ],
+        [
+          1350,
+          0.5563732147216797
+        ],
+        [
+          1355,
+          0.4410416603088379
+        ],
+        [
+          1360,
+          0.5354398250579834
+        ],
+        [
+          1365,
+          0.48881053924560547
+        ],
+        [
+          1370,
+          0.49713897705078125
+        ],
+        [
+          1375,
+          0.41689338684082033
+        ],
+        [
+          1380,
+          0.48846235275268557
+        ],
+        [
+          1385,
+          0.5345709323883057
+        ],
+        [
+          1390,
+          0.35724477767944335
+        ],
+        [
+          1395,
+          0.43430604934692385
+        ],
+        [
+          1400,
+          0.40343523025512695
+        ],
+        [
+          1405,
+          0.6320734024047852
+        ],
+        [
+          1410,
+          0.40380353927612306
+        ],
+        [
+          1415,
+          0.5467453479766846
+        ],
+        [
+          1420,
+          0.4095023155212402
+        ],
+        [
+          1425,
+          0.3740863561630249
+        ],
+        [
+          1430,
+          0.5286553859710693
+        ],
+        [
+          1435,
+          0.47427663803100584
+        ],
+        [
+          1440,
+          0.32062203884124757
+        ],
+        [
+          1445,
+          0.5215931415557862
+        ],
+        [
+          1450,
+          0.5987022876739502
+        ],
+        [
+          1455,
+          0.44915223121643066
+        ],
+        [
+          1460,
+          0.622642993927002
+        ],
+        [
+          1465,
+          0.45696277618408204
+        ],
+        [
+          1470,
+          0.39503960609436034
+        ],
+        [
+          1475,
+          0.5792191505432129
+        ],
+        [
+          1480,
+          0.38580851554870604
+        ],
+        [
+          1485,
+          0.6130735874176025
+        ],
+        [
+          1490,
+          0.6726343631744385
+        ],
+        [
+          1495,
+          0.4854581356048584
+        ],
+        [
+          1500,
+          0.6373466491699219
+        ],
+        [
+          1505,
+          0.4073436737060547
+        ],
+        [
+          1510,
+          0.5435008049011231
+        ],
+        [
+          1515,
+          0.47867474555969236
+        ],
+        [
+          1520,
+          0.551309871673584
+        ],
+        [
+          1525,
+          0.2795373201370239
+        ],
+        [
+          1530,
+          0.36884887218475343
+        ],
+        [
+          1535,
+          0.45034065246582033
+        ],
+        [
+          1540,
+          0.44568471908569335
+        ],
+        [
+          1545,
+          0.5535481929779053
+        ],
+        [
+          1550,
+          0.44118733406066896
+        ],
+        [
+          1555,
+          0.4900341510772705
+        ],
+        [
+          1560,
+          0.25799901485443116
+        ],
+        [
+          1565,
+          0.4854903697967529
+        ],
+        [
+          1570,
+          0.5393784046173096
+        ],
+        [
+          1575,
+          0.46895771026611327
+        ],
+        [
+          1580,
+          0.4191147804260254
+        ],
+        [
+          1585,
+          0.4938986301422119
+        ],
+        [
+          1590,
+          0.458939266204834
+        ],
+        [
+          1595,
+          0.666780662536621
+        ],
+        [
+          1600,
+          0.35604352951049806
+        ],
+        [
+          1605,
+          0.5920113563537598
+        ],
+        [
+          1610,
+          0.5219676971435547
+        ],
+        [
+          1615,
+          0.432145357131958
+        ],
+        [
+          1620,
+          0.5668623924255372
+        ],
+        [
+          1625,
+          0.3860563516616821
+        ],
+        [
+          1630,
+          0.4242111682891846
+        ],
+        [
+          1635,
+          0.5688434600830078
+        ],
+        [
+          1640,
+          0.4235218048095703
+        ],
+        [
+          1645,
+          0.5683547019958496
+        ],
+        [
+          1650,
+          0.5653594017028809
+        ],
+        [
+          1655,
+          0.560854721069336
+        ],
+        [
+          1660,
+          0.3130913496017456
+        ],
+        [
+          1665,
+          0.6038717269897461
+        ],
+        [
+          1670,
+          0.4055805683135986
+        ],
+        [
+          1675,
+          0.34053080081939696
+        ],
+        [
+          1680,
+          0.4771883010864258
+        ],
+        [
+          1685,
+          0.6145187854766846
+        ],
+        [
+          1690,
+          0.32711019515991213
+        ],
+        [
+          1695,
+          0.7888044357299805
+        ],
+        [
+          1700,
+          0.6031911373138428
+        ],
+        [
+          1705,
+          0.5600569248199463
+        ],
+        [
+          1710,
+          0.34711084365844724
+        ],
+        [
+          1715,
+          0.3525977849960327
+        ],
+        [
+          1720,
+          0.2565990686416626
+        ],
+        [
+          1725,
+          0.4544377326965332
+        ],
+        [
+          1730,
+          0.47514948844909666
+        ],
+        [
+          1735,
+          0.5507607936859131
+        ],
+        [
+          1740,
+          0.47069268226623534
+        ],
+        [
+          1745,
+          0.5952386379241943
+        ],
+        [
+          1750,
+          0.29404492378234864
+        ]
+      ]
+    },
+    {
+      "experience": "dpo_triage_cible_20261106_132004",
+      "run_id": "44fa0e000e984708ac353f052d270679",
+      "metrique": "eval_loss",
+      "points": [
+        [
+          0,
+          0.6931471228599548
+        ],
+        [
+          16,
+          0.6582483053207397
+        ],
+        [
+          32,
+          0.6510204076766968
+        ],
+        [
+          32,
+          0.6510204076766968
+        ]
+      ]
+    },
+    {
+      "experience": "dpo_triage_cible_20261106_132004",
+      "run_id": "44fa0e000e984708ac353f052d270679",
+      "metrique": "loss",
+      "points": [
+        [
+          1,
+          0.6931473016738892
+        ],
+        [
+          4,
+          0.6885249614715576
+        ],
+        [
+          8,
+          0.6802566647529602
+        ],
+        [
+          12,
+          0.6720632314682007
+        ],
+        [
+          16,
+          0.657992422580719
+        ],
+        [
+          20,
+          0.6511485576629639
+        ],
+        [
+          24,
+          0.6369484663009644
+        ],
+        [
+          28,
+          0.6376442313194275
+        ],
+        [
+          32,
+          0.6393628716468811
+        ]
+      ]
+    }
+  ]
+}
+;
+const panels=[...document.querySelectorAll('.panel')];let page=0;
+const nav=document.querySelector('#navigation');panels.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.dataset.title;b.onclick=()=>show(i);nav.append(b)});
+function show(i){page=i;panels.forEach((p,j)=>p.hidden=j!==i);[...nav.children].forEach((b,j)=>b.setAttribute('aria-current',i===j?'step':'false'));document.querySelector('#prev').disabled=i===0;document.querySelector('#next').disabled=i===panels.length-1;document.querySelector('#progress').textContent=`${i+1} / ${panels.length} · parcours de 15 minutes`;window.scrollTo({top:0,behavior:'instant'})}
+document.querySelector('#prev').onclick=()=>show(Math.max(0,page-1));document.querySelector('#next').onclick=()=>show(Math.min(panels.length-1,page+1));show(0);
+const pct=x=>(x*100).toFixed(1).replace('.',',')+' %';
+function results(){const g=document.querySelector('#group').value,m=document.querySelector('#metric').value;let rows=DATA.lignes.filter(x=>g==='choix'?(x.groupe==='historique'||(x.groupe==='mixte'&&x.epoque===3)):x.groupe===g);document.querySelector('#bars').replaceChildren();for(const r of rows){let e=document.createElement('div');e.className='barrow';e.innerHTML=`<span>${r.nom}</span><div class="track"><div class="bar" style="width:${r.scores[m]*100}%"></div></div><strong>${pct(r.scores[m])}</strong>`;document.querySelector('#bars').append(e)}document.querySelector('#scores').innerHTML='<table><thead><tr><th>Modèle</th><th>QCM</th><th>F1 QA</th><th>Macro-F1</th><th>Rappel urgent</th><th>Sur-triage ↓</th></tr></thead><tbody>'+rows.map(r=>'<tr><td>'+r.nom+'</td>'+['accuracy_qcm','f1_lexical','macro_f1_priorite','rappel_maximale','taux_sur_triage'].map(k=>'<td>'+pct(r.scores[k])+'</td>').join('')+'</tr>').join('')+'</tbody></table>';document.querySelector('#interpretation').textContent=({choix:'Le mélange rétablit la QA ; le SFT successif garde un meilleur rappel urgent. Je compare plusieurs dimensions.',mixte:'Le troisième checkpoint offre le meilleur compromis parmi les trois passages initiaux.',poursuite:'Époque 5 : meilleure macro-F1 ; époque 6 : meilleur rappel de cette poursuite ; époque 8 : meilleur F1 lexical. Aucun gagnant universel.',dpo_cible:'DPO non retenu : rappel urgent 91 → 87 → 83 %. La référence a été réévaluée dans cette même session ; ses petits écarts avec le run initial ne sont pas un nouvel entraînement.'})[g]}
+document.querySelector('#group').onchange=results;document.querySelector('#metric').onchange=results;results();
+const scenarios={space:[[0,'Saisie fictive','Je choisis français ou anglais. La langue et les réponses restent dans un état de session Gradio isolé.'],[1,'Questionnaire déterministe','prochaine_question() choisit le premier champ manquant. Quatre réponses, ou cinq si douleur/pain est détecté. Aucun GPU à cette étape.'],[2,'Un appel modèle','Le prompt utilise le template SFT figé. ZeroGPU alloue le GPU pendant generate(). Transformers charge Qwen3 et le LoRA successif v3 ; génération gloutonne, 192 tokens maximum.'],[3,'Contrôle du contrat','interpreter() exige ESI 1 à 5, priorité cohérente, orientation et fin correcte. Sinon : revue humaine, sans niveau de priorité exploitable.'],[4,'Affichage et trace','Le résultat reste une proposition à valider. La trace JSON contient les événements, empreintes, latence et usage. Elle est téléchargeable et temporaire.']],api:[[0,'POST /v1/consultations','Le client transmet un JSON fictif et un Bearer token. La clé ne doit jamais figurer dans une URL ou dans les logs.'],[1,'FastAPI / Pydantic','Authentification puis validation du schéma et des longueurs. Si une information manque, l’API renvoie a_completer sans appeler vLLM.'],[2,'POST /v1/completions','Le backend envoie les IDs exacts du prompt au serveur vLLM, avec le modèle attendu, temperature=0 et l’EOS natif. vLLM sert le modèle ; il ne gère pas le questionnaire.'],[3,'Contrôle métier','La réponse brute est analysée ; une sortie incohérente ou tronquée impose une revue humaine. Une erreur d’inférence produit une indisponibilité, jamais une priorité inventée.'],[4,'Audit et réponse HTTP','L’interaction fictive et le résultat sont conservés dans SQLite. La réponse porte son identifiant, la provenance du modèle et la latence. Une panne de journalisation suspend la décision.']],auth:[[0,'Requête sans clé','Une requête arrive sur une route protégée.'],[1,'401 Unauthorized','L’authentification bloque la requête avant l’inférence. Aucun prompt n’est envoyé au modèle.']],invalid:[[0,'JSON non conforme','Un champ inconnu, un texte vide ou une longueur excessive est envoyé.'],[1,'422 Unprocessable Entity','Pydantic refuse la saisie. Le modèle n’est pas sollicité.']],format:[[2,'Réponse du modèle','Le texte généré ne respecte pas le contrat, ou atteint la limite de tokens.'],[3,'Revue humaine','Je n’extrais pas arbitrairement un chiffre du texte : aucune priorité n’est attribuée.'],[4,'Trace et affichage','Je conserve la réponse et le motif technique. Le parseur ne garantit pas la pertinence médicale des sorties acceptées.']]};let step=0;
+function pipeline(){let rows=scenarios[document.querySelector('#scenario').value],s=rows[step];document.querySelectorAll('#pipeline .node').forEach((n,i)=>n.classList.toggle('active',i===s[0]));document.querySelector('#step-description').innerHTML='<h3>'+s[1]+'</h3><p>'+s[2]+'</p>';document.querySelector('#step-counter').textContent=`${step+1} / ${rows.length}`;document.querySelector('#back-step').disabled=step===0;document.querySelector('#next-step').disabled=step===rows.length-1}
+document.querySelector('#scenario').onchange=()=>{step=0;pipeline()};document.querySelector('#back-step').onclick=()=>{step--;pipeline()};document.querySelector('#next-step').onclick=()=>{step++;pipeline()};pipeline();
+const select=document.querySelector('#curve');DATA.courbes_mlflow.forEach((c,i)=>{let o=document.createElement('option');o.value=i;o.textContent=c.experience+' · '+c.metrique;select.append(o)});
+function curve(){const c=DATA.courbes_mlflow[Number(select.value)];if(!c)return;const pts=c.points;let xmin=Math.min(...pts.map(x=>x[0])),xmax=Math.max(...pts.map(x=>x[0])),ymin=0,ymax=Math.max(...pts.map(x=>x[1]))*1.12;const x=v=>60+(v-xmin)/(xmax-xmin||1)*810,y=v=>210-v/ymax*180;document.querySelector('#loss-chart').innerHTML=`<path d="M60 20 V210 H870" fill="none" stroke="#9baaa6"/><text x="8" y="26" fill="#566873">${ymax.toFixed(2)}</text><text x="30" y="213">0</text><text x="60" y="240">pas ${xmin}</text><text x="795" y="240">${xmax}</text><polyline points="${pts.map(p=>x(p[0])+','+y(p[1])).join(' ')}" fill="none" stroke="#007e80" stroke-width="2.5"/>`;document.querySelector('#curve-info').textContent=`${pts.length} valeurs archivées · ${c.metrique} · run ${c.run_id}. Une loss plus basse n’est pas une mesure de sécurité clinique.`}select.onchange=curve;curve();
+</script></body></html>

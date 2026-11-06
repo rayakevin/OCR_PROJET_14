@@ -45,10 +45,15 @@ def verifier_tokenisation(dataset, source, tokenizer, longueur_max):
 
 
 def main():
-    """Trace les données, contrôle la référence puis entraîne 32 pas de DPO."""
+    """Trace les données et entraîne un pilote DPO sans modifier la référence SFT."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--adapter', type=Path, required=True)
     parser.add_argument('--revision', required=True)
+    parser.add_argument('--source-protocol', type=Path, help='Protocole parent si la source est un checkpoint.')
+    parser.add_argument('--learning-rate', type=float, default=5e-6)
+    parser.add_argument('--batch-size', type=int, choices=(1, 2), default=2)
+    parser.add_argument('--experiment', default='OCR14-Colab-DPO-v3')
+    parser.add_argument('--run-name', default='dpo-pilote-256-paires-32-pas')
     parser.add_argument('--data-dir', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--tracking-uri', required=True)
@@ -57,10 +62,12 @@ def main():
     if args.output.exists() and any(args.output.iterdir()):
         raise ValueError('Le dossier DPO contient déjà un run ; je refuse de l’écraser.')
     args.output.mkdir(parents=True, exist_ok=True)
-    origine = json.loads((args.adapter.parent / 'protocole_entrainement.json').read_text())
+    origine = json.loads((args.source_protocol or args.adapter.parent / 'protocole_entrainement.json').read_text())
     assert origine['format_sft'] == FORMAT_SFT and origine['arguments']['revision'] == args.revision
     manifeste = json.loads((args.data_dir / 'manifest.json').read_text())
     assert manifeste['revision'] == args.revision and manifeste['max_length'] == 4096
+    if manifeste.get('adapter_sha256') is not None:
+        assert manifeste['adapter_sha256'] == empreinte(args.adapter / 'adapter_model.safetensors')
     donnees = {s: lire_jsonl(args.data_dir / f'{s}.jsonl') for s in ('train', 'validation')}
     for split in donnees:
         assert empreinte(args.data_dir / f'{split}.jsonl') == manifeste['splits'][split]['sha256']
@@ -73,11 +80,11 @@ def main():
     empreinte_initiale = empreinte_adaptateur(modele, 'default')
     config = DPOConfig(
         output_dir=str(args.output / 'checkpoints'), max_steps=32,
-        per_device_train_batch_size=2, per_device_eval_batch_size=2,
-        gradient_accumulation_steps=8, learning_rate=5e-6, beta=0.1,
+        per_device_train_batch_size=args.batch_size, per_device_eval_batch_size=args.batch_size,
+        gradient_accumulation_steps=16 // args.batch_size, learning_rate=args.learning_rate, beta=0.1,
         loss_type=['sigmoid'], lr_scheduler_type='cosine', warmup_steps=2,
         max_length=4096, bf16=True, tf32=True, gradient_checkpointing=True,
-        precompute_ref_log_probs=True, precompute_ref_batch_size=2,
+        precompute_ref_log_probs=True, precompute_ref_batch_size=args.batch_size,
         eval_strategy='steps', eval_steps=16, save_strategy='steps', save_steps=16,
         save_total_limit=2, load_best_model_at_end=True, metric_for_best_model='eval_loss',
         greater_is_better=False, logging_steps=4, logging_first_step=True,
@@ -85,11 +92,11 @@ def main():
     )
     mlflow.set_tracking_uri(args.tracking_uri)
     client = mlflow.tracking.MlflowClient()
-    nom_experience = 'OCR14-Colab-DPO-v3'
+    nom_experience = args.experiment
     if client.get_experiment_by_name(nom_experience) is None:
         client.create_experiment(nom_experience, artifact_location=args.artifact_location)
     mlflow.set_experiment(nom_experience)
-    with mlflow.start_run(run_name='dpo-pilote-256-paires-32-pas') as run:
+    with mlflow.start_run(run_name=args.run_name) as run:
         debut = time.perf_counter()
         trainer = DPOTrainer(model=modele, args=config, processing_class=tokenizer,
             train_dataset=Dataset.from_list(donnees['train']),
@@ -104,12 +111,13 @@ def main():
             'configuration_dpo': config.to_dict(), 'manifeste_donnees': manifeste,
             'reference': 'copie_gelee_du_lora_sft_initial', 'reference_sha256': empreinte_initiale,
             'adapter_source_sha256': empreinte(args.adapter / 'adapter_model.safetensors'),
-            'scripts_sha256': {p.name: empreinte(p) for p in (Path(__file__), RACINE / 'training/preparer_dpo.py')},
+            'scripts_sha256': {p.name: empreinte(p) for p in (Path(__file__), RACINE / 'training/preparer_dpo.py',
+                RACINE / 'training/preparer_dpo_triage.py')},
             'versions': {p: version(p) for p in ('trl', 'transformers', 'peft', 'datasets', 'torch')}}
         chemin = args.output / 'protocole_entrainement.json'
         chemin.write_text(json.dumps(protocole, default=str, ensure_ascii=False, indent=2))
         mlflow.log_params({'revision': args.revision, 'initial_adapter': str(args.adapter),
-            'beta': 0.1, 'learning_rate': 5e-6, 'max_steps': 32, 'batch_effectif': 16,
+            'beta': 0.1, 'learning_rate': args.learning_rate, 'max_steps': 32, 'batch_effectif': 16,
             'train': len(donnees['train']), 'validation': len(donnees['validation']),
             'reference_sha256': empreinte_initiale, 'format_sft': FORMAT_SFT})
         mlflow.log_artifact(str(chemin))

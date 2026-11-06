@@ -114,6 +114,48 @@ class APITests(unittest.TestCase):
             self.assertEqual(self.envoyer(cas).status_code,422)
         self.assertEqual(self.backend.appels,0)
 
+    def test_traces_http_refus_et_correlation_sans_secret(self):
+        import sqlite3
+        reponses = [self.client.post('/v1/consultations?cle=secret-query', json=CAS),
+                    self.envoyer(CAS | {'nom_patient': 'ne_pas_journaliser'}), self.envoyer()]
+        self.assertEqual([r.status_code for r in reponses], [401, 422, 200])
+        with sqlite3.connect(self.db) as db:
+            lignes = db.execute('SELECT request_id,couche,route,statut FROM evenements_http').fetchall()
+        for r in reponses:
+            traces = [x for x in lignes if x[0] == r.headers['X-Request-ID']]
+            self.assertEqual([x[1] for x in traces], ['api_debut', 'api_fin'])
+            self.assertEqual(traces[-1][-1], r.status_code)
+        self.assertEqual(reponses[-1].json()['request_id'], reponses[-1].headers['X-Request-ID'])
+        for interdit in (CLE, 'secret-query', 'ne_pas_journaliser', CAS['plainte']):
+            self.assertNotIn(interdit, str(lignes))
+
+    def test_panne_du_journal_http_bloque_avant_modele(self):
+        import sqlite3
+        with patch.object(self.client.app.state.audit, 'http', side_effect=sqlite3.OperationalError()):
+            self.assertEqual(self.envoyer().status_code, 503)
+        self.assertEqual(self.backend.appels, 0)
+
+    def test_appel_sortant_partage_identifiant_et_trace_erreur(self):
+        import sqlite3
+        from serving.traces_http import contexte_requete
+        moteur = Vllm('http://fictif/v1', 'cle-fictive')
+        moteur.client.close()
+        moteur.client = httpx.Client(base_url='http://fictif/v1/', transport=httpx.MockTransport(
+            lambda r: httpx.Response(503, text='prompt-secret-ne-pas-logguer')))
+        contexte = contexte_requete.set((self.client.app.state.audit, 'test-correlation'))
+        try:
+            with self.assertRaises(httpx.HTTPStatusError):
+                moteur.requete('POST', 'completions', json={'prompt': 'texte-prive'})
+        finally:
+            contexte_requete.reset(contexte)
+            moteur.fermer()
+        with sqlite3.connect(self.db) as db:
+            trace = db.execute('SELECT request_id,couche,route,statut,duree_ms,erreur_type FROM evenements_http').fetchone()
+        self.assertEqual(trace[:4], ('test-correlation', 'vllm', 'POST /v1/completions', 503))
+        self.assertGreaterEqual(trace[4], 0)
+        self.assertEqual(trace[5], 'HTTPStatusError')
+        self.assertNotIn('secret', str(trace))
+
 
 class BackendTests(unittest.TestCase):
     def test_template_reel_sans_poids_ni_gpu(self):

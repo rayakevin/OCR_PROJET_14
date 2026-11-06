@@ -2,11 +2,13 @@
 
 import hashlib
 import json
+import time
 from pathlib import Path
 from threading import Lock
 
 import httpx
 from training.format_sft import construire_prompt
+from serving.traces_http import tracer_sortie
 
 MODELE = json.loads(Path(__file__).with_name('modele.json').read_text())
 
@@ -24,9 +26,24 @@ class Vllm:
         self.verrou = Lock()
 
     def disponible(self):
-        reponse = self.client.get('models')
-        reponse.raise_for_status()
+        reponse = self.requete('GET', 'models')
         return MODELE['id'] in {m['id'] for m in reponse.json()['data']}
+
+    def requete(self, methode, route, **options):
+        """Trace statut et durée, y compris timeout/erreur HTTP, sans copier le prompt."""
+        debut = time.perf_counter()
+        statut, erreur_type = None, None
+        try:
+            reponse = self.client.request(methode, route, **options)
+            statut = reponse.status_code
+            reponse.raise_for_status()
+            return reponse
+        except Exception as erreur:
+            erreur_type = type(erreur).__name__
+            raise
+        finally:
+            tracer_sortie(f'{methode} /v1/{route}', statut,
+                          round(1000 * (time.perf_counter() - debut), 2), erreur_type)
 
     def generer(self, cas, langue):
         """Refuse les entrées longues puis envoie les IDs exacts, avec décodage glouton."""
@@ -40,12 +57,11 @@ class Vllm:
         if len(ids) > MODELE['max_input_tokens']:
             raise EntreeTropLongue('Entrée trop longue ; reformuler sans supprimer un élément utile.')
         assert self.tokenizer.eos_token_id == MODELE['eos_token_id']
-        reponse = self.client.post('completions', json={
+        reponse = self.requete('POST', 'completions', json={
             'model': MODELE['id'], 'prompt': ids, 'temperature': 0, 'max_tokens': MODELE['max_new_tokens'],
             'stop_token_ids': [MODELE['eos_token_id']], 'skip_special_tokens': True,
             'seed': 3407, 'n': 1,
         })
-        reponse.raise_for_status()
         document = reponse.json()
         choix = document['choices'][0]
         if not isinstance(choix['text'], str):

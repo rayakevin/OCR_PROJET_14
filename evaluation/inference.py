@@ -52,7 +52,8 @@ def main():
     """Exécute une inférence batchée et conserve les paramètres avec chaque réponse."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--phase", choices=("qa", "triage"), required=True)
-    parser.add_argument("--split", choices=("validation", "test"), default="test")
+    parser.add_argument("--split", choices=("train", "validation", "test"), default="test",
+                        help="train sert à miner les préférences DPO, jamais à mesurer la généralisation.")
     parser.add_argument("--data-dir", type=Path, default=DONNEES, help="Version figée des partitions à évaluer.")
     parser.add_argument("--model", default=MODELE_BASE)
     parser.add_argument("--revision", help="Révision Hugging Face du socle pour figer les poids.")
@@ -86,6 +87,11 @@ def main():
         configuration["generation"]["stop_token"] = args.stop_token
     if args.data_dir.resolve() != DONNEES.resolve():
         configuration["donnees_sha256"] = hashlib.sha256(fichier_donnees.read_bytes()).hexdigest()
+    if args.split == "train":
+        if args.adapter is None:
+            raise ValueError("Le minage attend un adaptateur SFT identifié.")
+        configuration["adaptateur_sha256"] = hashlib.sha256(
+            (args.adapter / 'adapter_model.safetensors').read_bytes()).hexdigest()
     position_depart = 0
     if args.resume and args.output.exists():
         position_depart = verifier_reprise(
@@ -101,6 +107,12 @@ def main():
             return
     tokenizer = AutoTokenizer.from_pretrained(args.model, revision=args.revision)
     tokenizer.padding_side = "left"
+    if args.split == "train":
+        # Un cas amputé ne doit pas devenir une préférence d'entraînement.
+        for exemple in exemples:
+            prompt = construire_prompt(tokenizer, exemple['messages'][:2])
+            if len(tokenizer.encode(prompt, add_special_tokens=False)) > 2048:
+                raise ValueError(f"Minage sans troncature impossible : {exemple['id']}")
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
     modele = AutoModelForCausalLM.from_pretrained(
@@ -144,6 +156,7 @@ def main():
                 arret = analyser_arret(ids_sortie, fins)
                 prediction = tokenizer.decode(ids_sortie[:arret["tokens_sortie"]], skip_special_tokens=True).strip()
                 fichier.write(json.dumps({
+                    **configuration,
                     "id": exemple["id"],
                     "prediction": prediction,
                     "modele": args.model,

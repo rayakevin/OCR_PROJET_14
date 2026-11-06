@@ -8,13 +8,14 @@ import sqlite3
 import time
 from uuid import UUID, uuid4
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from serving.audit import Audit
 from serving.backend import EntreeTropLongue, MODELE, Vllm
 from serving.domaine import Consultation, interpreter, presentation, prochaine_question
+from serving.traces_http import contexte_requete
 
 
 AVERTISSEMENT = 'Prototype pédagogique — cas fictifs uniquement. Toute proposition doit être vérifiée par un soignant.'
@@ -44,6 +45,37 @@ def creer_app(*, backend=None, cle=None, audit_path=None):
     app = FastAPI(title='OCR14 — POC de triage', version='0.1.0', lifespan=duree)
     bearer = HTTPBearer(auto_error=False)
 
+    @app.middleware('http')
+    async def journaliser(requete, suite):
+        """Trace aussi les refus 401/422 avant le handler ; ne lit jamais le corps."""
+        identifiant = str(uuid4())
+        requete.state.request_id = identifiant
+        audit = app.state.audit
+        contexte = contexte_requete.set((audit, identifiant))
+        debut = time.perf_counter()
+        erreur_type = None
+        try:
+            # Une trace de début permet de retrouver un appel interrompu brutalement.
+            audit.http(identifiant, 'api_debut', 'requete_entrante')
+            reponse = await suite(requete)
+        except sqlite3.Error:
+            erreur_type = 'SQLiteError'
+            reponse = JSONResponse(status_code=503, content={'detail': 'Journal indisponible ; traitement suspendu.'})
+        except Exception as erreur:
+            erreur_type = type(erreur).__name__
+            reponse = JSONResponse(status_code=500, content={'detail': 'Erreur interne ; aucune proposition disponible.'})
+        finally:
+            contexte_requete.reset(contexte)
+        # Je journalise le patron de route, jamais l'URL libre ni ses paramètres.
+        route = getattr(requete.scope.get('route'), 'path', 'route_inconnue')
+        try:
+            audit.http(identifiant, 'api_fin', requete.method + ' ' + route,
+                       reponse.status_code, round(1000 * (time.perf_counter() - debut), 2), erreur_type)
+        except sqlite3.Error:
+            reponse = JSONResponse(status_code=503, content={'detail': 'Journal indisponible ; traitement suspendu.'})
+        reponse.headers['X-Request-ID'] = identifiant
+        return reponse
+
     def authentifier(jeton: HTTPAuthorizationCredentials | None = Depends(bearer)):
         if jeton is None or not hmac.compare_digest(jeton.credentials.encode(), secret.encode()):
             raise HTTPException(401, 'Authentification requise.', headers={'WWW-Authenticate': 'Bearer'})
@@ -72,13 +104,14 @@ def creer_app(*, backend=None, cle=None, audit_path=None):
         return {'statut': 'pret', 'modele': MODELE['id']}
 
     @app.post('/v1/consultations', dependencies=[Depends(authentifier)])
-    def consulter(cas: Consultation):
+    def consulter(cas: Consultation, requete: Request):
         debut = time.perf_counter()
         session = str(cas.session_id or uuid4())
         audit = app.state.audit
         provenance = {k: MODELE[k] for k in ('id', 'revision', 'adapter_sha256', 'format_sft', 'mlflow_run_id')}
         identifiant = audit.commencer(session, cas.model_dump(mode='json'), provenance)
-        resultat = {'interaction_id': identifiant, 'session_id': session, 'modele': provenance,
+        resultat = {'interaction_id': identifiant, 'request_id': requete.state.request_id,
+                    'session_id': session, 'modele': provenance,
                     'avertissement': AVERTISSEMENT, 'validation_humaine_requise': True}
         question = prochaine_question(cas)
         code = 200

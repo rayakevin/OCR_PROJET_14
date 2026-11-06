@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 import json
+import logging
 import os
 from pathlib import Path
 import sqlite3
@@ -17,6 +18,10 @@ class Audit:
             db.execute('''CREATE TABLE IF NOT EXISTS interactions (
                 id TEXT PRIMARY KEY, session_id TEXT NOT NULL, date_utc TEXT NOT NULL,
                 demande TEXT NOT NULL, resultat TEXT, modele TEXT NOT NULL, statut TEXT NOT NULL)''')
+            db.execute('''CREATE TABLE IF NOT EXISTS evenements_http (
+                id INTEGER PRIMARY KEY, request_id TEXT NOT NULL, date_utc TEXT NOT NULL,
+                couche TEXT NOT NULL, route TEXT NOT NULL, statut INTEGER,
+                duree_ms REAL, erreur_type TEXT)''')
         os.chmod(self.chemin, 0o600)
 
     def connecter(self):
@@ -30,6 +35,17 @@ class Audit:
                        (identifiant, session_id, datetime.now(timezone.utc).isoformat(),
                         json.dumps(demande, ensure_ascii=False), json.dumps(modele), 'en_cours'))
         return identifiant
+
+    def http(self, request_id, couche, route, statut=None, duree_ms=None, erreur_type=None):
+        """Journal technique minimal ; les détails fictifs restent dans l'audit métier."""
+        evenement = dict(request_id=request_id, date_utc=datetime.now(timezone.utc).isoformat(),
+                         couche=couche, route=route, statut=statut,
+                         duree_ms=duree_ms, erreur_type=erreur_type)
+        with self.connecter() as db:
+            db.execute('''INSERT INTO evenements_http
+                (request_id,date_utc,couche,route,statut,duree_ms,erreur_type)
+                VALUES (:request_id,:date_utc,:couche,:route,:statut,:duree_ms,:erreur_type)''', evenement)
+        logging.getLogger('uvicorn.error').info(json.dumps(evenement, ensure_ascii=False))
 
     def terminer(self, identifiant, resultat):
         with self.connecter() as db:

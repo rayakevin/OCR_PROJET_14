@@ -22,6 +22,7 @@ dependencies = [
     "pydantic==2.14.1",
     "scikit-learn>=1.9.1",
     "spacy>=3.8.16",
+    "sqlalchemy>=2,<3",
     "torch>=2.15.0",
     "transformers>=5.22.1",
     "trl==1.17.1",

@@ -1,0 +1,18 @@
+[
+  {
+    "repo": "rayakevin/ocr14-medical-bilingue-v3",
+    "type": "dataset",
+    "revision": "fc9a9716c551b47c0f606af88a18caad2ca2f0b6",
+    "prive": true,
+    "fichiers": 19,
+    "url": "https://huggingface.co/datasets/rayakevin/ocr14-medical-bilingue-v3"
+  },
+  {
+    "repo": "rayakevin/ocr14-triage-lora-experiences",
+    "type": "model",
+    "revision": "252c5245c887e81abb9b4f73001550e8239fb344",
+    "prive": true,
+    "fichiers": 14,
+    "url": "https://huggingface.co/rayakevin/ocr14-triage-lora-experiences"
+  }
+]

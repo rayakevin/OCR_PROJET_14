@@ -26,6 +26,7 @@ from transformers import (
 RACINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RACINE))
 from training.format_sft import FORMAT_SFT, encoder_exemple
+from training.continuer_mixte import verifier_depart
 DONNEES = RACINE / "data/processed/sft_deux_phases"
 MODELE_BASE = "Qwen/Qwen3-1.7B-Base"
 SEED = 3407
@@ -96,7 +97,7 @@ def analyser_arguments():
     parser.add_argument("--model", default=MODELE_BASE)
     parser.add_argument("--revision", required=True, help="Révision figée du socle et du tokenizer.")
     parser.add_argument("--dtype", choices=("bfloat16", "float16"), default="bfloat16")
-    parser.add_argument("--phase", choices=("phase1_qa", "phase2_triage"), default="phase1_qa")
+    parser.add_argument("--phase", choices=("phase1_qa", "phase2_triage", "sft_mixte"), default="phase1_qa")
     parser.add_argument("--adapter", type=Path, help="Adaptateur de phase 1 à poursuivre en phase 2.")
     parser.add_argument("--tracking-uri", default=os.environ.get("MLFLOW_TRACKING_URI", f"sqlite:///{RACINE / 'mlflow.db'}"))
     parser.add_argument("--experiment", default="OCR_PROJET_14-SFT")
@@ -115,6 +116,10 @@ def analyser_arguments():
     parser.add_argument("--max-steps", type=int, default=-1)
     parser.add_argument("--warmup-steps", type=int, help="Fixe le warmup pour comparer des runs à budget égal.")
     parser.add_argument("--checkpoint-steps", type=int, default=50)
+    parser.add_argument("--save-total-limit", type=int, default=2,
+                        help="Nombre de checkpoints conservés pour la comparaison sur validation.")
+    parser.add_argument("--initial-checkpoint", type=Path,
+                        help="Poursuit les poids du SFT mixte avec un nouvel optimiseur et calendrier.")
     parser.add_argument("--resume-from-checkpoint", type=Path)
     parser.add_argument("--seed", type=int, default=SEED)
     return parser.parse_args()
@@ -123,6 +128,12 @@ def analyser_arguments():
 def main():
     """Charge les données, entraîne l'adaptateur et sauvegarde le meilleur état."""
     args = analyser_arguments()
+    if args.phase == "sft_mixte" and args.adapter:
+        raise ValueError("Le SFT mixte repart du socle, sans adaptateur initial.")
+    if args.initial_checkpoint and (args.phase != "sft_mixte" or args.adapter or args.resume_from_checkpoint):
+        raise ValueError("La poursuite mixte ne se combine pas avec --adapter ou --resume-from-checkpoint.")
+    depart = verifier_depart(args.initial_checkpoint, args.train, args.validation, args.revision) if args.initial_checkpoint else None
+    adaptateur_initial = args.initial_checkpoint or args.adapter
     random.seed(args.seed)
     torch.manual_seed(args.seed)
     args.output = args.output.resolve()
@@ -154,6 +165,8 @@ def main():
             Path(__file__), RACINE / "training/format_sft.py")},
         "versions": {nom: version(nom) for nom in ("torch", "transformers", "peft", "mlflow")},
     }
+    if depart:
+        protocole["poursuite"] = depart
     chemin_protocole = args.output / "protocole_entrainement.json"
     if args.resume_from_checkpoint:
         precedent = json.loads(chemin_protocole.read_text())
@@ -179,11 +192,12 @@ def main():
         task_type="CAUSAL_LM",
         target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
     )
-    if args.adapter:
-        origine = json.loads((args.adapter.parent / "protocole_entrainement.json").read_text())
+    if adaptateur_initial:
+        dossier_origine = (args.initial_checkpoint.parent.parent if args.initial_checkpoint else args.adapter.parent)
+        origine = json.loads((dossier_origine / "protocole_entrainement.json").read_text())
         if origine["format_sft"] != FORMAT_SFT or origine["arguments"]["revision"] != args.revision:
             raise ValueError("L'adaptateur initial doit utiliser le même format et le même socle.")
-        modele = PeftModel.from_pretrained(modele, str(args.adapter), is_trainable=True)
+        modele = PeftModel.from_pretrained(modele, str(adaptateur_initial), is_trainable=True)
         configuration_lora = modele.peft_config["default"]
     else:
         modele = get_peft_model(modele, configuration_lora)
@@ -212,7 +226,7 @@ def main():
         save_strategy="steps",
         save_steps=(args.checkpoint_steps if args.max_steps < 0
                     else min(args.checkpoint_steps, args.max_steps)),
-        save_total_limit=2,
+        save_total_limit=args.save_total_limit,
         load_best_model_at_end=True,
         metric_for_best_model="eval_loss",
         greater_is_better=False,
@@ -239,7 +253,7 @@ def main():
             "revision": args.revision,
             "dtype": args.dtype,
             "format_sft": FORMAT_SFT,
-            "initial_adapter": str(args.adapter) if args.adapter else "aucun",
+            "initial_adapter": str(adaptateur_initial) if adaptateur_initial else "aucun",
             "train_examples": len(train),
             "validation_examples": len(validation),
             "train_sha256": empreinte(args.train),
@@ -253,6 +267,7 @@ def main():
             "effective_batch_size": args.batch_size * args.gradient_accumulation,
             "seed": args.seed,
             "checkpoint_steps": args.checkpoint_steps,
+            "save_total_limit": args.save_total_limit,
             "warmup_steps": parametres.warmup_steps,
             "lora_r": configuration_lora.r,
             "lora_alpha": configuration_lora.lora_alpha,
@@ -261,6 +276,8 @@ def main():
             "total_parameters": total,
             "output_dir": str(args.output),
         })
+        if depart:
+            mlflow.log_params({f"poursuite_{k}": v for k, v in depart.items()})
         mlflow.log_artifact(str(chemin_protocole), artifact_path="configuration")
         trainer = Trainer(
             model=modele,

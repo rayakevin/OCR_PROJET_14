@@ -6,6 +6,7 @@ from pathlib import Path
 import gradio as gr
 from serving.domaine import Consultation, prochaine_question
 from serving.space.parcours import avancer, exporter_trace, nouvelle_session
+from serving.space.support import iframe
 
 TEXTES = {
     'fr': {
@@ -86,35 +87,38 @@ def creer_interface(generer):
 
     t = TEXTES['fr']
     with gr.Blocks(title='OCR14 · Triage', analytics_enabled=False, delete_cache=(3600, 3600)) as demo:
-        with gr.Row():
-            with gr.Column(scale=3):
-                titre = gr.Markdown(t['titre'])
-            with gr.Column(scale=1, min_width=200):
-                langue = gr.Radio([('Français', 'fr'), ('English', 'en')], value='fr',
-                                  label='Language', show_label=False, container=False)
-        intro = gr.Markdown(t['intro'])
-        demarche = gr.Markdown(t['demarche'])
-        with gr.Accordion(t['reglages'], open=False) as reglages:
-            mode = gr.Radio(t['modes'], value='guide', label=t['mode'])
-            details = gr.Checkbox(value=False, label=t['details'])
-            aide = gr.Markdown(t['aide'])
-        etat = gr.State(lambda: nouvelle_session('fr'), time_to_live=3600)
-        question = gr.Textbox(value=prochaine_question(Consultation())['texte'],
-                              label=t['question'], interactive=False)
-        texte = gr.Textbox(label=t['reponse'], lines=4, max_length=6000)
-        with gr.Row():
-            envoyer = gr.Button(t['envoyer'], variant='primary')
-            nouveau = gr.Button(t['nouveau'])
-        proposition = gr.Textbox(label=t['resultat'], lines=5, interactive=False)
-        resultat = gr.JSON(label=t['technique'], open=True, visible=False)
-        trace = gr.File(label=t['trace'], interactive=False)
-        conservation = gr.Markdown(t['conservation'])
-        sorties = [etat, question, texte, proposition, resultat, trace, envoyer]
-        envoi = envoyer.click(soumettre, [texte, etat, mode], sorties, concurrency_limit=1, api_name=False)
-        nouveau.click(demarrer, [langue, mode], sorties, cancels=[envoi], api_name=False)
-        mode.input(demarrer, [langue, mode], sorties, cancels=[envoi], api_name=False)
-        langue.input(traduire, [langue, mode],
-                     sorties + [titre, intro, demarche, reglages, mode, details, aide, nouveau, conservation],
-                     cancels=[envoi], api_name=False)
-        details.change(lambda visible: gr.update(visible=visible), details, resultat, api_name=False)
+        with gr.Tab('Démonstration / Demo', id='demo'):
+            with gr.Row():
+                with gr.Column(scale=3):
+                    titre = gr.Markdown(t['titre'])
+                with gr.Column(scale=1, min_width=200):
+                    langue = gr.Radio([('Français', 'fr'), ('English', 'en')], value='fr',
+                                      label='Language', show_label=False, container=False)
+            intro = gr.Markdown(t['intro'])
+            demarche = gr.Markdown(t['demarche'])
+            with gr.Accordion(t['reglages'], open=False) as reglages:
+                mode = gr.Radio(t['modes'], value='guide', label=t['mode'])
+                details = gr.Checkbox(value=False, label=t['details'])
+                aide = gr.Markdown(t['aide'])
+            etat = gr.State(lambda: nouvelle_session('fr'), time_to_live=3600)
+            question = gr.Textbox(value=prochaine_question(Consultation())['texte'],
+                                  label=t['question'], interactive=False)
+            texte = gr.Textbox(label=t['reponse'], lines=4, max_length=6000)
+            with gr.Row():
+                envoyer = gr.Button(t['envoyer'], variant='primary')
+                nouveau = gr.Button(t['nouveau'])
+            proposition = gr.Textbox(label=t['resultat'], lines=5, interactive=False)
+            resultat = gr.JSON(label=t['technique'], open=True, visible=False)
+            trace = gr.File(label=t['trace'], interactive=False)
+            conservation = gr.Markdown(t['conservation'])
+            sorties = [etat, question, texte, proposition, resultat, trace, envoyer]
+            envoi = envoyer.click(soumettre, [texte, etat, mode], sorties, concurrency_limit=1, api_name=False)
+            nouveau.click(demarrer, [langue, mode], sorties, cancels=[envoi], api_name=False)
+            mode.input(demarrer, [langue, mode], sorties, cancels=[envoi], api_name=False)
+            langue.input(traduire, [langue, mode],
+                         sorties + [titre, intro, demarche, reglages, mode, details, aide, nouveau, conservation],
+                         cancels=[envoi], api_name=False)
+            details.change(lambda visible: gr.update(visible=visible), details, resultat, api_name=False)
+        with gr.Tab('Soutenance · 15 minutes (FR)', id='soutenance'):
+            gr.HTML(iframe())
     return demo.queue(max_size=16)

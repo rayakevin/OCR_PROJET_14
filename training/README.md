@@ -58,7 +58,7 @@ adaptateurs et suivi dans Drive avant de libérer l'environnement GPU.
 Je reconstruis la version nettoyée avec `data_ingestion/figer_partitions.py`.
 Les fichiers historiques restent disponibles ; les nouvelles partitions, leurs
 empreintes et les exclusions sont dans `data/processed/partitions_v3`.
-Le train triage contient 1 888 entrées, la validation 238 et le test indépendant
+Le train triage contient 1 888 entrées, la validation 238 et le test figé
 226. La QA reste inchangée. Les exclusions portent toujours sur la paire de langues.
 
 Je reprends seulement le SFT de triage avec 357 pas et les mêmes paramètres.
@@ -83,3 +83,35 @@ principal du POC, et le DPO comme variante expérimentale. La section 19 du
 notebook détaille aussi l'écart entre langues et la perte de capacité QA.
 Les résultats et les 1 000 prédictions comparatives sont disponibles dans
 `data/evaluation/colab_sft_dpo_v3`, en complément de la sauvegarde Drive.
+
+## SFT mixte puis DPO ciblé (6 novembre)
+
+Le notebook 07 part du socle avec un nouveau LoRA sur l'union QA/triage. L'époque 3
+reste la référence expérimentale équilibrée ; les sept époques supplémentaires,
+avec un nouvel optimiseur et un taux réduit, n'apportent pas de gain global.
+
+Le notebook 08 prépare une autre intervention : `preparer_dpo_triage.py` transforme
+les erreurs réelles du SFT mixte sur le **train triage uniquement** en préférences.
+La référence silver reste inchangée ; la réponse rejetée est la génération effective.
+Les sorties invalides et les troncatures sont exclues. Je refuse un pilote sans
+sous-triages critiques et sur-triages, plutôt que d'inventer des erreurs.
+
+Le contrôle interne DPO représente 20 % des groupes de cas, FR/EN indissociables.
+Ces cas ont déjà été vus en SFT : cette loss ne mesure pas la généralisation.
+Le pilote poursuit l'époque 3 pendant 32 pas, LR 2e-6, beta 0,1, microbatch 1,
+accumulation 16. Je mesure séparément QA et triage aux pas 16 et 32.
+Le script conserve aussi son ancien comportement par défaut pour les expériences historiques.
+
+Je vérifie la référence figée, les SHA256, le format et les frontières de tokens.
+Les tests CPU vérifient le pipeline ; ils ne préjugent pas des scores obtenus sur GPU.
+Le checkpoint sauvegardé dans `adapter/` suit la loss de préférence : le choix
+métier repose sur les deux checkpoints explicitement évalués, pas sur ce nom de dossier.
+
+
+## Décision après le DPO ciblé
+
+Le run du 6 novembre est terminé : 355/85 paires, 32 pas. Sur validation,
+le rappel urgent passe de 91 % pour le SFT mixte réévalué à 87 % puis 83 %,
+et la macro-F1 de 0,7875 à 0,7457 puis 0,7373. Je ne retiens aucun de ces DPO.
+Les 1 500 prédictions, six rapports, poids et états d’entraînement sont récupérés ;
+95 empreintes correspondent. Le notebook 08 conserve le bilan et les limites.

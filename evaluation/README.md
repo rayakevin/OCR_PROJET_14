@@ -184,3 +184,37 @@ Le bilan publiable sans corpus est `reports/bilan_final_20261105.json`.
 .venv/bin/mlflow ui --host 127.0.0.1 --port 5002 \
   --backend-store-uri sqlite:///data/colab_archive/local/mlflow_finalisation.db
 ```
+
+## Variante : SFT mixte depuis le socle
+
+Dans [07_sft_mixte_colab.ipynb](07_sft_mixte_colab.ipynb), je prépare un nouveau
+LoRA sur l'union QA/triage des partitions v3 : 3 986 exemples d'entraînement
+et 500 de validation. Je conserve trois checkpoints et mesure les deux tâches
+séparément, avec le même protocole de génération que le SFT v3. Le test final
+n'est pas inclus dans le paquet Colab. Cette expérience reste à exécuter ; elle
+ne remplace pas automatiquement le modèle déployé.
+
+## Lecture actuelle et DPO ciblé
+
+Je lis 01 → 02 → 03 pour la construction de l'expérience, 04 → 05 → 06 pour
+la démonstration et les preuves historiques, puis 07 → 08 pour les variantes.
+Les encadrés « Repère de lecture » distinguent les résultats historiques des décisions actuelles.
+
+Le test final a été consulté le 5 novembre : il ne constitue plus un jeu de sélection
+pour les variantes suivantes. Le notebook 08 n'inclut aucun fichier de test dans son paquet.
+Il réévalue le SFT mixte époque 3 et les pas DPO 16/32 sur les mêmes 500 entrées de validation.
+Les seuils de comparaison sont définis dans `comparer_dpo_triage.py` avant le calcul.
+Le rappel urgent doit augmenter sans dégradation excessive du QA, de la macro-F1,
+du sur-triage ou du format. Une hausse marginale n'est pas une preuve clinique.
+
+Pour montrer les courbes, je lance depuis la racine :
+` .venv/bin/python scripts/ouvrir_mlflow.py --experience mixte `.
+
+
+## Décision après le DPO ciblé
+
+Le run du 6 novembre est terminé : 355/85 paires, 32 pas. Sur validation,
+le rappel urgent passe de 91 % pour le SFT mixte réévalué à 87 % puis 83 %,
+et la macro-F1 de 0,7875 à 0,7457 puis 0,7373. Je ne retiens aucun de ces DPO.
+Les 1 500 prédictions, six rapports, poids et états d’entraînement sont récupérés ;
+95 empreintes correspondent. Le notebook 08 conserve le bilan et les limites.
