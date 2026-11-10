@@ -139,6 +139,8 @@ sur références silver, sans revendiquer une efficacité clinique démontrée.
 L’onglet **Soutenance · 15 minutes (FR)** du Space réunit le parcours, les schémas
 interactifs, les comparaisons et un export des courbes MLflow. Les animations ne
 consomment pas de GPU. Le [plan oral](reports/plan_soutenance.md) donne le minutage.
+La [présentation plein écran](reports/Soutenance%20triage%20OCR14.html) de 19 diapositives
+se télécharge et s’ouvre dans un navigateur ; les flèches du clavier font défiler.
 Les graphiques publics ne contiennent aucun cas individuel.
 
 Les révisions de remise et leurs URL figurent dans
