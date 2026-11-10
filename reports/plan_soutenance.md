@@ -30,7 +30,8 @@ Le support reste lisible sans GPU ; je réserve l’inférence à la démonstrat
 Je démarre MLflow local avant l’oral avec
 `.venv/bin/python scripts/ouvrir_mlflow.py --experience dpo-cible`.
 Le lien du support vise mon poste ; il ne fournit pas un service MLflow public.
-Je vérifie l’accès de l’évaluateur aux dépôts privés et garde le PDF et la page HTML
+Le dépôt GitHub et le Space sont publics. Je vérifie l’accès de l’évaluateur aux deux dépôts
+Hugging Face privés (dataset et adaptateurs) et garde le PDF et la page HTML
 locale comme repli si la connexion ou le quota ZeroGPU empêche une démo.
 
 Je prépare deux cas explicitement fictifs, sans donnée personnelle. Je ne prédis

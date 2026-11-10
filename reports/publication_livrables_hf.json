@@ -2,7 +2,7 @@
   {
     "repo": "rayakevin/ocr14-medical-bilingue-v3",
     "type": "dataset",
-    "revision": "fc9a9716c551b47c0f606af88a18caad2ca2f0b6",
+    "revision": "a1683ef3bde101ba063f127f8c64ded3fb7a5d24",
     "prive": true,
     "fichiers": 19,
     "url": "https://huggingface.co/datasets/rayakevin/ocr14-medical-bilingue-v3"

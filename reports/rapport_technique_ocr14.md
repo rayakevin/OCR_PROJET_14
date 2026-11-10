@@ -29,7 +29,7 @@ Le test final et la vérification vLLM sont exécutés et leurs preuves récupé
 
 Choix techniques → données et consensus → séparation des tâches → correction du protocole → comparaison SFT/DPO → risques → architecture de démonstration → coûts → preuves et recommandations.
 
-Les notebooks 01 à 09 suivent la chronologie, avec un repère de lecture à chaque entrée. Les corpus et les poids restent hors de Git ; les scripts, contrats, protocoles et notebooks sont versionnés dans le dépôt privé.
+Les notebooks 01 à 09 suivent la chronologie, avec un repère de lecture à chaque entrée. Les corpus et les poids restent hors de Git ; les scripts, contrats, protocoles et notebooks sont versionnés dans le dépôt GitHub, public depuis le 10 novembre.
 
 <!-- page -->
 ### Choix techniques et justification

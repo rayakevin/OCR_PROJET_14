@@ -139,8 +139,7 @@ sur références silver, sans revendiquer une efficacité clinique démontrée.
 L’onglet **Soutenance · 15 minutes (FR)** du Space réunit le parcours, les schémas
 interactifs, les comparaisons et un export des courbes MLflow. Les animations ne
 consomment pas de GPU. Le [plan oral](reports/plan_soutenance.md) donne le minutage.
-Les graphiques publics ne contiennent aucun cas individuel. La page
-[Soutenance triage OCR14](reports/Soutenance%20triage%20OCR14.html) est le support principal de l'oral.
+Les graphiques publics ne contiennent aucun cas individuel.
 
 Les révisions de remise et leurs URL figurent dans
 [publication_livrables_hf.json](reports/publication_livrables_hf.json).
@@ -148,7 +147,7 @@ Le chargement distant des quatre configurations a été vérifié : QA, triage,
 DPO général et DPO ciblé. Les colonnes optionnelles ont été uniformisées avec null,
 sans modification des textes, des identifiants ou des partitions.
 
-Les dépôts HF sont privés ; le lien seul ne donne pas accès à l’évaluateur.
+Le dépôt GitHub et le Space sont publics. Les dépôts HF du dataset et des adaptateurs restent privés ; le lien seul n'y donne pas accès à l’évaluateur.
 Je ne rends pas les données publiques pour contourner cette question d’accès.
 
 
