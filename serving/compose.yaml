@@ -30,7 +30,7 @@ services:
       VLLM_API_KEY: ${VLLM_API_KEY:?Définir VLLM_API_KEY}
       HF_TOKEN: ${HF_TOKEN:-}
     volumes:
-      - ${OCR14_ADAPTER_DIR:?Définir le dossier du LoRA SFT v3}:/modele/adaptateur:ro
+      - ${OCR14_ADAPTER_DIR:?Définir le dossier du LoRA décrit dans modele.json}:/modele/adaptateur:ro
       - ./lancer_vllm.py:/configuration/lancer_vllm.py:ro
       - ./modele.json:/configuration/modele.json:ro
       - poids:/root/.cache/huggingface

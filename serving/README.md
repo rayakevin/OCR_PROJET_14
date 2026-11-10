@@ -1,6 +1,7 @@
 # POC de triage : de l'adaptateur à une interaction traçable
 
-Je retiens le SFT triage v3 après la comparaison avec le pilote DPO. Je construis
+Je sers le SFT mixte époque 3, retenu après la comparaison avec le SFT successif v3
+et les deux essais DPO ; `modele.json` fixe sa révision et son empreinte. Je construis
 une démonstration destinée aux cas fictifs ; je ne présente pas ses propositions
 comme une validation clinique.
 
@@ -74,10 +75,11 @@ vrai tokenizer miniature pour détecter une dépendance manquante à Jinja2.
 
 ## Reproduire la vérification vLLM sur un environnement GPU
 
-Je récupère depuis Drive le dossier
-`experiences/sft_dpo_v3_20261105/sft_triage/adapter`. Son fichier de poids doit
-avoir le hash enregistré dans `modele.json`. Je ne remplace pas ce dossier par
-un ancien adaptateur local de phase 1.
+Je récupère l'adaptateur SFT mixte époque 3 à la racine du dépôt
+`rayakevin/ocr14-triage-lora-experiences`, ou dans le dossier `adapter/` du Space.
+Son fichier de poids doit avoir le hash enregistré dans `modele.json`. Je ne le
+remplace pas par un autre checkpoint. La vérification du 5 novembre utilisait le
+SFT successif (`experiences/sft_dpo_v3_20261105/sft_triage/adapter` sur Drive).
 
 Je définis `OCR14_API_KEY` et `VLLM_API_KEY` (24 caractères au minimum), ainsi que
 `OCR14_ADAPTER_DIR` (chemin absolu du dossier vérifié), dans l'environnement ou
@@ -96,7 +98,7 @@ la charge, ni la pertinence clinique ; la première requête peut inclure le
 chargement du tokenizer. Les partitions de test final restent distinctes de ces cas fictifs. Cet essai
 porte sur le contrat technique et ne mesure pas la qualité clinique.
 
-Le workflow `.github/workflows/poc.yml` exécute désormais 36 tests et construit Docker.
+Le workflow `.github/workflows/poc.yml` exécute la suite Pytest (52 tests) et construit Docker.
 Sur `main`, il publie ensuite une liste fermée de fichiers dans le Space existant
 et vérifie sa révision en fonctionnement. Le secret `HF_TOKEN` reste dans Actions.
 La [première exécution complète](https://github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162)
@@ -111,8 +113,9 @@ produit une réponse réelle avec une trace JSON récupérée. Aucun abonnement 
 matériel payant n'a été demandé.
 [Conditions et compatibilité ZeroGPU](https://huggingface.co/docs/hub/spaces-zerogpu).
 
-Cette variante utilise Transformers/PEFT et le même LoRA, récupéré depuis Drive
-et vérifié par SHA256. Le runtime ZeroGPU emploie PyTorch 2.13.0 ; je ne présume
+Depuis le 10 novembre, le Space sert le SFT mixte époque 3 ; un parcours fictif
+vérifie l'inférence réelle après la bascule. Cette variante utilise Transformers/PEFT
+et le même LoRA que l'API, vérifié par SHA256. Le runtime ZeroGPU emploie PyTorch 2.13.0 ; je ne présume
 pas d'une identité numérique avec l'environnement Colab. Je conserve vLLM comme
 voie de vérification de l'exigence technique du projet, et je justifierai
 explicitement tout écart entre l'hébergement gratuit et cette exigence.

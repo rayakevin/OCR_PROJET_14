@@ -1,6 +1,7 @@
 """Je vérifie le contrat, les traces et la latence d'un endpoint réel sur trois cas fictifs."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
 import os
@@ -19,6 +20,20 @@ CAS_FICTIFS = [
      'reponses': {'debut': 'Ce matin', 'evolution': 'Stable', 'contexte': 'Âge 40 ans ; antécédents inconnus',
                   'retentissement': 'Gêne pour écrire'}},
 ]
+
+
+def mesurer_debit(client, simultanees=8):
+    """Envoie des cas fictifs en parallèle pour observer le débit ; ce n'est pas un test de charge."""
+    debut = time.perf_counter()
+    with ThreadPoolExecutor(simultanees) as executeur:
+        reponses = list(executeur.map(
+            lambda i: client.post('v1/consultations', json=CAS_FICTIFS[i % len(CAS_FICTIFS)]), range(simultanees)))
+    duree = time.perf_counter() - debut
+    reussies = [r.json() for r in reponses if r.status_code == 200]
+    tokens = sum(d['inference']['usage']['completion_tokens'] for d in reussies)
+    return {'requetes_simultanees': simultanees, 'reussies': len(reussies), 'duree_s': round(duree, 3),
+            'requetes_par_seconde': round(len(reussies) / duree, 2),
+            'tokens_generes_par_seconde': round(tokens / duree, 1)}
 
 
 def verifier(url, cle):
@@ -41,10 +56,12 @@ def verifier(url, cle):
                            'statut': document['statut'], 'latence_http_ms': round(millisecondes, 2),
                            'latence_api_ms': document['latence_ms'],
                            'usage': document['inference']['usage'], 'modele': document['modele']})
+        debit = mesurer_debit(client)
     # Le premier appel comprend éventuellement le chargement du tokenizer.
     return {'date_utc': datetime.now(timezone.utc).isoformat(), 'cas': 'fictifs_sans_labels_cliniques',
             'mesures': lignes, 'latence_mediane_ms': statistics.median(x['latence_http_ms'] for x in lignes),
-            'limite': 'Trois requêtes séquentielles ; ni test de charge ni mesure de pertinence clinique.'}
+            'debit': debit,
+            'limite': 'Trois requêtes séquentielles puis huit simultanées ; ni test de charge ni mesure de pertinence clinique.'}
 
 
 def main():

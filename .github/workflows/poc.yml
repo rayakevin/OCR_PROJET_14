@@ -19,8 +19,8 @@ jobs:
           python-version: '3.12'
           cache: pip
           cache-dependency-path: serving/requirements.txt
-      - run: pip install -r serving/requirements.txt scikit-learn==1.9.1
-      - run: python -m unittest tests.test_pipeline_donnees tests.test_partitions_figees tests.test_evaluation tests.test_serving tests.test_space tests.test_verifier_colab tests.test_sft_mixte tests.test_revoir_urgences tests.test_dpo_triage -v
+      - run: pip install -r serving/requirements.txt scikit-learn==1.9.1 pytest==8.4.2
+      - run: python -m pytest tests/test_pipeline_donnees.py tests/test_partitions_figees.py tests/test_evaluation.py tests/test_serving.py tests/test_space.py tests/test_verifier_colab.py tests/test_sft_mixte.py tests/test_revoir_urgences.py tests/test_dpo_triage.py -v
       - run: docker build -f serving/Dockerfile -t ocr14-api:ci .
   deployer:
     needs: verifier

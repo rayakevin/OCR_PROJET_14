@@ -13,11 +13,12 @@ Qwen3-1.7B-Base adapté avec LoRA. Le projet reste un prototype pédagogique.
 6. `evaluation/06_verification_vllm_colab.ipynb` : reprise vLLM/API sur port libre, sans recalculer le test.
 7. `evaluation/07_sft_mixte_colab.ipynb` : SFT commun QA/triage, époques 1 à 10 et décision.
 8. `evaluation/08_dpo_triage_cible_colab.ipynb` : DPO ciblé sur les erreurs du train, résultats et décision de non-sélection.
-9. `evaluation/09_endpoint_soutenance_colab.ipynb` : endpoint vLLM HTTPS temporaire, à vérifier sur GPU avant l’oral.
+9. `evaluation/09_endpoint_soutenance_colab.ipynb` : endpoint vLLM HTTPS temporaire, exécuté et vérifié le 10 novembre sur L4 ; à relancer avant l’oral.
 
-Je distingue le **modèle déployé, SFT successif v3**, de ma **référence expérimentale,
-SFT mixte époque 3**. Le mélange restaure largement la QA et améliore légèrement
-la macro-F1 de triage, avec un rappel urgent inférieur au SFT successif sur validation.
+Le **modèle retenu et déployé est le SFT mixte époque 3** (Space et configuration
+de l'API depuis le 10 novembre). Le **SFT successif v3**, déployé auparavant, reste
+le seul modèle mesuré sur le test final. Le mélange restaure largement la QA et améliore légèrement
+la macro-F1 de triage, avec un rappel urgent inférieur au SFT successif sur validation (91 contre 95 sur 100).
 La poursuite jusqu'à dix époques n'apporte pas de meilleur compromis global.
 Le DPO généraliste n'a pas amélioré le triage ; le DPO ciblé du notebook 08 réduit le sur-triage mais dégrade le rappel urgent
 (91 → 87 → 83 %) : il n’est pas retenu.
@@ -30,10 +31,14 @@ La numérotation est un ordre de lecture, pas une commande « tout réentraîner
 Je distingue le code testé localement, l'inférence réellement exécutée et le
 déploiement vérifié. La démonstration est accessible sur
 [Hugging Face ZeroGPU](https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en) ;
-deux parcours fictifs FR/EN ont produit une réponse réelle et une trace exportable.
-La voie vLLM/API est vérifiée sur trois cas fictifs dans Colab (A100 40 Go),
-avec une revue humaine due à un libellé anglais non canonique. Elle reste interne
-à une VM temporaire. Aucune validation clinique n'est revendiquée.
+après la bascule sur le SFT mixte, un parcours fictif y produit une proposition réelle
+(révision `f32b2a65` du Space), et deux parcours FR/EN sont vérifiés en local.
+La voie vLLM/API a été vérifiée le 5 novembre sur trois cas fictifs dans Colab (A100 40 Go)
+avec le SFT successif, avec une revue humaine due à un libellé anglais non canonique.
+Le 10 novembre, le notebook 09 l'expose en HTTPS avec le SFT mixte sur une L4 Colab :
+médiane HTTP 1,23 s sur trois cas fictifs, huit requêtes simultanées en 1,54 s
+(5,2 requêtes/s, 329 tokens/s), refus 401 sans clé vérifié depuis l'extérieur. Cet endpoint
+est temporaire : son URL change à chaque lancement. Aucune validation clinique n'est revendiquée.
 
 Voir [le POC](serving/README.md), [l'évaluation](evaluation/README.md) et
 [l'entraînement](training/README.md) pour les commandes et la provenance.
@@ -43,8 +48,8 @@ MLflow locale et un inventaire vérifié. La section 20 du notebook 03 décrit
 les accès et la récupération encore incomplète des derniers fichiers DPO.
 
 Le [pipeline GitHub Actions](https://github.com/rayakevin/OCR_PROJET_14/actions/workflows/poc.yml)
-a exécuté avec succès 51 tests, construit l'image Docker et publié le paquet
-vérifié sur le Space existant. Il utilise le secret `HF_TOKEN` du dépôt.
+exécute la suite Pytest (52 tests), construit l'image Docker puis publie le paquet
+vérifié sur le Space existant ; le déploiement ne démarre que si les tests réussissent. Il utilise le secret `HF_TOKEN` du dépôt.
 
 Le [rapport technique](reports/rapport_technique_ocr14.md) et sa
 [version PDF](output/pdf/rapport_technique_ocr14.pdf) distinguent les résultats
@@ -95,7 +100,7 @@ Le notebook 08 mine uniquement `phase2_triage_train.jsonl` avec le checkpoint 75
 mixte. Il sépare les erreurs par cas bilingue en train DPO et contrôle interne,
 puis teste 32 mises à jour contre la référence SFT figée. Le bilan compare rappel
 urgent, sur-triage, macro-F1, QA et format sur les validations v3. Les 1 500 prédictions sont récupérées et leurs métriques recalculées ;
-les deux checkpoints échouent aux critères prévus. Le Space conserve son SFT successif v3. Le test historique a déjà été vu ;
+les deux checkpoints échouent aux critères prévus. Le Space sert le SFT mixte époque 3, source de ce DPO. Le test historique a déjà été vu ;
 une confirmation indépendante des nouvelles variantes demanderait de nouveaux cas.
 
 ## Conformité aux livrables et préparation de la soutenance
@@ -106,10 +111,10 @@ Je confronte les productions à la consigne « Livrables et soutenance » fourni
 | Livrable demandé | État vérifié | Action restante |
 |---|---|---|
 | Dataset bilingue JSONL / Hugging Face Datasets | [Dépôt HF privé](https://huggingface.co/datasets/rayakevin/ocr14-medical-bilingue-v3), quatre configurations chargées depuis la révision publiée | Vérifier l’accès de l’évaluateur ; restrictions de licence documentées |
-| Modèle spécialisé SFT/LoRA et activité DPO | [Adaptateurs HF privés](https://huggingface.co/rayakevin/ocr14-triage-lora-experiences) : mixte, successif, DPO ciblé 16/32 ; dernier DPO non retenu | Conserver la distinction entre poids livrés et modèle déployé |
-| Rapport technique PDF, 20 pages maximum | Rapport actualisé avec les résultats et limites | Relecture et dépôt du PDF |
-| Endpoint cloud utilisant vLLM | Vérification interne réalisée ; notebook 09 prépare une URL HTTPS temporaire authentifiée | Exécuter et vérifier l’endpoint public ; le Space Transformers ne le remplace pas |
-| CI/CD GitHub Actions | Tests, Docker et publication du Space | Vérifier la dernière exécution sur la révision livrée |
+| Modèle spécialisé SFT/LoRA et activité DPO | [Adaptateurs HF privés](https://huggingface.co/rayakevin/ocr14-triage-lora-experiences) : mixte (déployé), successif, DPO ciblé 16/32 ; dernier DPO non retenu | Republier la carte du dépôt après la bascule du 10 novembre |
+| Rapport technique PDF, 20 pages maximum | 19 pages : choix techniques, risques, coûts, endpoint public, conditions go / no-go | Relecture et dépôt du PDF |
+| Endpoint cloud utilisant vLLM | Endpoint HTTPS public vérifié le 10 novembre (Colab L4, SFT mixte, latence et débit mesurés, journaux conservés) | Relancer le notebook 09 une vingtaine de minutes avant l'oral ; pas d'hébergement permanent |
+| CI/CD GitHub Actions | Pytest, Docker et publication du Space | Vérifier l'exécution sur la révision livrée après le commit |
 
 Le texte n'impose pas un GPU allumé en permanence : je peux prévoir un service
 activable pour la soutenance, avec une procédure de démarrage et de contrôle.
@@ -134,21 +139,14 @@ sur références silver, sans revendiquer une efficacité clinique démontrée.
 L’onglet **Soutenance · 15 minutes (FR)** du Space réunit le parcours, les schémas
 interactifs, les comparaisons et un export des courbes MLflow. Les animations ne
 consomment pas de GPU. Le [plan oral](reports/plan_soutenance.md) donne le minutage.
-Les graphiques publics ne contiennent aucun cas individuel. Pour régénérer les agrégats
-depuis les archives : `.venv/bin/python -m scripts.generer_support`.
+Les graphiques publics ne contiennent aucun cas individuel. La page
+[Soutenance triage OCR14](reports/Soutenance%20triage%20OCR14.html) est le support principal de l'oral.
 
 Les révisions de remise et leurs URL figurent dans
 [publication_livrables_hf.json](reports/publication_livrables_hf.json).
 Le chargement distant des quatre configurations a été vérifié : QA, triage,
 DPO général et DPO ciblé. Les colonnes optionnelles ont été uniformisées avec null,
 sans modification des textes, des identifiants ou des partitions.
-
-Pour préparer une nouvelle remise :
-
-```bash
-.venv/bin/python -m scripts.preparer_livrables_hf --destination data/deployment/nouvelle_remise
-.venv/bin/python -m scripts.conditionner_livrables
-```
 
 Les dépôts HF sont privés ; le lien seul ne donne pas accès à l’évaluateur.
 Je ne rends pas les données publiques pour contourner cette question d’accès.

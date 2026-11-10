@@ -1,9 +1,9 @@
 {
-  "id": "ocr14-sft-triage-v3",
+  "id": "ocr14-sft-mixte-ep3",
   "socle": "Qwen/Qwen3-1.7B-Base",
   "revision": "ea980cb0a6c2ae4b936e82123acc929f1cec04c1",
-  "adapter_sha256": "7ca4d0257eb7cab0bccf9427efabb47f3a66bde3ec8bb9d76567f3cda086b7e5",
-  "mlflow_run_id": "a63b597a3afd461588cddeb72375c856",
+  "adapter_sha256": "62d4e5085fd4dd457c5f7b8bbcd0da944ffaf347b8081123f3247dc342db2877",
+  "mlflow_run_id": "e81754a47cfd462289cddcec4155e6a5",
   "format_sft": "template_sans_reflexion_eos_natif_v2",
   "dtype": "bfloat16",
   "eos_token_id": 151643,

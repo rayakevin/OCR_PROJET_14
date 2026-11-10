@@ -23,15 +23,16 @@ Every proposal requires professional review. Fictional cases only.
 
 ## Modèle et limites
 
-Je réutilise Qwen/Qwen3-1.7B-Base et le LoRA SFT triage v3 sélectionné sur la
-validation. `serving/modele.json` fixe la révision du socle, l'empreinte des poids,
+Je réutilise Qwen/Qwen3-1.7B-Base et le LoRA SFT mixte époque 3, entraîné en une
+seule fois sur la QA médicale et le triage, puis sélectionné sur la validation.
+`serving/modele.json` fixe la révision du socle, l'empreinte des poids,
 les prompts, l'EOS natif et les limites de tokens. Les annotations d'apprentissage
 proviennent d'un consensus de LLM ; elles ne constituent pas une validation clinique.
 
-Sur la validation : macro-F1 des priorités 0,7715, rappel des urgences maximales
-0,95, soit 5 erreurs critiques sur 100 entrées urgentes. Ces résultats ne
-valident ni ce questionnaire, ni un usage réel. Le modèle a perdu beaucoup de
-performance en QA généraliste ; je le limite ici à la présentation de cas.
+Sur la validation : macro-F1 des priorités 0,7874, rappel des urgences maximales
+0,91, soit 9 erreurs critiques sur 100 entrées urgentes, et 57 % de QCM corrects
+en QA. Ces résultats ne valident ni ce questionnaire, ni un usage réel. Le test
+final historique a été mesuré sur le SFT successif précédent, pas sur ce modèle.
 
 Le questionnaire pose des questions déterministes sur les champs absents.
 La mention d'une douleur ajoute une question sur son retentissement ; cette

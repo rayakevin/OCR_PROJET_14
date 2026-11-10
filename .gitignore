@@ -24,3 +24,16 @@ mlflow.db
 
 # Documentation personnelle : hors livrables versionnés
 documentation_personnelle/
+
+# Outils locaux hors livrables : diagnostic matériel, brouillons, paquets Colab
+monitoring/
+tests/test_monitoring.py
+tmp/
+output/colab/
+
+# Outillage de remise (PDF, support, ZIP, dépôts HF) : conservé en local
+main.py
+scripts/generer_rapport.py
+scripts/generer_support.py
+scripts/conditionner_livrables.py
+scripts/preparer_livrables_hf.py

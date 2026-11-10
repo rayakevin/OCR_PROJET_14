@@ -11,7 +11,7 @@ from serving.space.publier import preparer
 
 SPACE = 'rayakevin/ocr14-triage-fr-en'
 # Version publique contenant l'adaptateur sélectionné, indépendant du code à déployer.
-REVISION_POIDS = 'b467327ca9c63369a44021827e052ba28ae47861'
+REVISION_POIDS = 'f32b2a65f9ef05fb431b4e07d65253d82b5d049a'
 
 
 def main():

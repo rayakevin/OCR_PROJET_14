@@ -10,9 +10,9 @@
   {
     "repo": "rayakevin/ocr14-triage-lora-experiences",
     "type": "model",
-    "revision": "252c5245c887e81abb9b4f73001550e8239fb344",
+    "revision": "ee4f52e3b3e2f884c2c0bbdb1c7f404bffecd044",
     "prive": true,
-    "fichiers": 14,
+    "fichiers": 15,
     "url": "https://huggingface.co/rayakevin/ocr14-triage-lora-experiences"
   }
 ]

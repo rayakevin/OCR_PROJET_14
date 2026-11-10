@@ -12,6 +12,7 @@ import httpx
 from serving.api import creer_app
 from serving.backend import EntreeTropLongue, MODELE, Vllm
 from serving.domaine import Consultation, interpreter, presentation, prochaine_question
+from serving.verifier_endpoint import mesurer_debit
 
 CLE = 'cle-fictive-de-test-uniquement-123456'
 SORTIE = ('Niveau ESI : 3\nPriorité : urgence modérée\n'
@@ -49,6 +50,14 @@ class APITests(unittest.TestCase):
 
     def envoyer(self, cas=CAS):
         return self.client.post('/v1/consultations', json=cas, headers=self.headers)
+
+    def test_debit_compte_reponses_et_tokens(self):
+        self.backend.generer = lambda cas, langue: {
+            'texte': SORTIE, 'fin': 'stop', 'usage': {'completion_tokens': 10}, 'prompt_sha256': 'test'}
+        self.client.headers.update(self.headers)
+        debit = mesurer_debit(self.client, simultanees=4)
+        self.assertEqual(debit['reussies'], 4)
+        self.assertGreater(debit['tokens_generes_par_seconde'], 0)
 
     def test_authentification_et_non_exposition(self):
         self.assertEqual(self.client.post('/v1/consultations', json=CAS).status_code, 401)

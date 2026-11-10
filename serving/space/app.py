@@ -15,7 +15,7 @@ from training.format_sft import construire_prompt
 
 ADAPTATEUR = Path('adapter')
 if hashlib.sha256((ADAPTATEUR / 'adapter_model.safetensors').read_bytes()).hexdigest() != MODELE['adapter_sha256']:
-    raise ValueError('Adaptateur différent du SFT v3 évalué.')
+    raise ValueError('Adaptateur différent du SFT mixte époque 3 sélectionné.')
 
 tokenizer = AutoTokenizer.from_pretrained(MODELE['socle'], revision=MODELE['revision'])
 if tokenizer.eos_token_id != MODELE['eos_token_id']:

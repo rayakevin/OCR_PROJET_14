@@ -1,13 +1,13 @@
 # POC de triage médical bilingue
 ## Rapport technique et recommandations
 
-**OCR Projet 14 · 6 novembre 2026 · résultats acquis, variantes et décision de livraison**
+**OCR Projet 14 · 10 novembre 2026 · résultats acquis, variantes et décision de livraison**
 
 Je construis un prototype de triage français / anglais basé sur Qwen3-1.7B-Base. Ma démarche relie la préparation des données, un SFT successif puis mixte, un pilote DPO généraliste et une démonstration traçable. Je teste ensuite un DPO ciblé sur les erreurs du train. Je distingue les résultats techniques, l'accord avec des annotations de modèles et une validation clinique, qui n'a pas été réalisée.
 
 ### Décision actuelle
 
-Je conserve le SFT triage v3 sur le Space. Pour les expériences, je retiens désormais le SFT mixte à l'époque 3 : il préserve bien mieux la QA, avec un rappel urgent inférieur au SFT successif sur validation. La poursuite jusqu'à dix époques n'apporte pas de meilleur compromis global. Le DPO ciblé est exécuté : le rappel urgent recule de 91 % à 87 %, puis 83 %. Je ne le retiens pas.
+Je retiens et je déploie le SFT mixte à l'époque 3 : il préserve bien mieux la QA que le SFT successif, avec une macro-F1 de triage légèrement supérieure et un rappel urgent inférieur sur validation (91 contre 95 sur 100). Depuis le 10 novembre, le Space et la configuration de l'API servent cet adaptateur. La poursuite jusqu'à dix époques n'apporte pas de meilleur compromis global. Le DPO ciblé est exécuté : le rappel urgent recule de 91 % à 87 %, puis 83 %. Je ne le retiens pas.
 
 ### Résultats et preuves disponibles
 
@@ -18,18 +18,29 @@ Je conserve le SFT triage v3 sur le Space. Pour les expériences, je retiens dé
 | DPO généraliste | 256/64 paires ; 32 pas ; pas de gain de triage observé |
 | SFT mixte, époque 3 | Validation : macro-F1 0,7874 ; urgents 91/100 ; QCM 57,25 % |
 | DPO ciblé | 355/85 paires ; 32 pas ; rappel urgent et macro-F1 dégradés |
-| Démonstration | Space Hugging Face ZeroGPU fonctionnel ; deux inférences réelles FR/EN |
+| Démonstration | Space Hugging Face ZeroGPU sur le SFT mixte époque 3 ; inférence réelle vérifiée après bascule |
 | CI/CD | Tests, image Docker et déploiement Space réussis sur GitHub Actions |
-| Test final | 976 prédictions conservées ; SFT : macro-F1 priorité 0,7858, urgents 88/98 |
-| API vLLM | Trois cas fictifs sur A100 40 Go ; médiane HTTP 514 ms ; une revue humaine |
+| Test final | 976 prédictions conservées ; SFT successif : macro-F1 priorité 0,7858, urgents 88/98 |
+| API vLLM publique | 10 novembre, Colab L4 + HTTPS, SFT mixte : médiane HTTP 1,23 s ; 8 requêtes simultanées en 1,54 s, soit 329 tokens/s |
 
-Le test final et la vérification vLLM sont exécutés et leurs preuves récupérées. Deux limites de livraison subsistent : la démonstration publique utilise Transformers, et les poids finaux du pilote DPO sont absents de la sauvegarde Drive accessible. Je les documente sans revendiquer une conformité intégrale.
+Le test final et la vérification vLLM sont exécutés et leurs preuves récupérées ; ils portent sur le SFT successif, sélectionné avant l'expérience mixte. Le test ayant déjà été consulté, je ne le rejoue pas pour le mixte : sa sélection repose sur la validation. L'endpoint vLLM public est exécuté et vérifié le 10 novembre avec le SFT mixte. Trois limites de livraison subsistent : la démonstration permanente utilise Transformers, l'endpoint vLLM est temporaire (GPU Colab loué à la demande, URL différente à chaque lancement), et les poids finaux du pilote DPO généraliste sont absents de la sauvegarde Drive accessible. Je les documente sans revendiquer une conformité intégrale.
 
 ### Trajet de lecture
 
-Données et consensus → séparation des tâches → correction du protocole → comparaison SFT/DPO → architecture de démonstration → preuves et recommandations.
+Choix techniques → données et consensus → séparation des tâches → correction du protocole → comparaison SFT/DPO → risques → architecture de démonstration → coûts → preuves et recommandations.
 
-Les notebooks 01 à 08 suivent la chronologie, avec un repère de lecture à chaque entrée. Les corpus et les poids restent hors de Git ; les scripts, contrats, protocoles et notebooks sont versionnés dans le dépôt privé.
+Les notebooks 01 à 09 suivent la chronologie, avec un repère de lecture à chaque entrée. Les corpus et les poids restent hors de Git ; les scripts, contrats, protocoles et notebooks sont versionnés dans le dépôt privé.
+
+<!-- page -->
+### Choix techniques et justification
+
+| Choix | Raison | Limite acceptée |
+|---|---|---|
+| Qwen3-1.7B-Base | Socle imposé par la phase 1 ; multilingue, Apache 2.0, assez petit pour itérer en quelques minutes sur un GPU de location | Connaissances médicales limitées ; le socle seul ne produit pas le format attendu |
+| LoRA (PEFT), rang 16 | 17,4 M de paramètres entraînés, environ 1 % ; adaptateur d'environ 70 Mo, versionnable et interchangeable sur un même socle | Capacité d'adaptation bornée ; oubli observé en entraînement successif |
+| SFT puis DPO (TRL) | Le SFT apprend le format et la tâche ; le DPO ajuste une préférence entre deux réponses sans modèle de récompense | Le DPO dépend entièrement de la qualité et de l'équilibre des paires |
+| vLLM | Traitement des requêtes par lots continus, API compatible OpenAI, chargement d'adaptateurs LoRA sur un socle partagé : meilleur débit qu'une génération Transformers requête par requête | Demande un GPU réservé ; incompatible avec l'allocation à la demande de ZeroGPU |
+| FastAPI, SQLite, Docker | Contrat typé, journal simple à auditer, image reproductible | SQLite en clair, mono-instance : suffisant pour un POC seulement |
 
 <!-- page -->
 ## 1. Construire un corpus adapté à la tâche
@@ -56,7 +67,9 @@ Les traductions permettent de présenter le même raisonnement dans les deux lan
 
 ### Protection et provenance
 
-L'audit automatique des 5 000 exemples initiaux ne détecte pas d'identifiant direct. Une revue humaine reste nécessaire : ce résultat ne constitue pas une preuve d'anonymisation complète ou de conformité RGPD. Les licences non renseignées doivent être clarifiées avant une diffusion des données dérivées. La démonstration est réservée aux cas fictifs.
+Ma démarche RGPD suit quatre principes. **Origine** : je n'utilise que des corpus publics de vignettes pédagogiques et de questions d'examen, sans dossier patient réel. **Minimisation** : je ne conserve que le texte, la langue, la source, la licence et les étiquettes ; aucune donnée n'est collectée auprès de personnes. **Contrôle** : `auditer_anonymisation.py` applique Presidio 2.2 avec spaCy `fr_core_news_md` et `en_core_web_sm` aux 10 000 messages des 5 000 exemples initiaux, seuil 0,65. Il relève 16 386 détections, surtout des lieux (9 655), des dates (3 541) et des « personnes » (3 183). Sur un échantillon de 60 de ces dernières, je trouve surtout des éponymes médicaux (Babinski, Lasègue), des termes cliniques et des médicaments, plus quelques désignations de vignettes pédagogiques (« Monsieur X. », « Marianne G. ») ; aucun téléphone, courriel, adresse IP, numéro RPPS ou licence médicale. Je ne masque donc pas automatiquement : remplacer « maladie de Parkinson » par une balise dégraderait le corpus sans protéger personne. **Usage** : la démonstration et les journaux n'acceptent que des cas fictifs.
+
+Une revue humaine reste nécessaire : cet audit ne constitue pas une preuve d'anonymisation complète ni de conformité RGPD. Un usage réel imposerait une analyse d'impact, une base légale, un hébergement certifié HDS et un journal chiffré. Les licences non renseignées doivent être clarifiées avant une diffusion des données dérivées.
 
 Les annotations constituent un standard silver. L'indépendance des appels ne garantit pas l'indépendance des biais. Les cas exclus peuvent aussi rendre le jeu retenu plus facile que les situations rencontrées à l'accueil.
 
@@ -139,7 +152,7 @@ La QA corrigée obtenait auparavant 59,54 % aux QCM et 0,3762 de F1 lexical. Sa 
 Le SFT v3 obtient 0,8180 de macro-F1 en français et 0,7229 en anglais. Pour quantifier l'incertitude dans une étude ultérieure, je rééchantillonnerais les cas par paire, car les deux langues ne sont pas indépendantes.
 
 <!-- page -->
-## 5. Test final après sélection
+## 5. Test final du SFT successif
 
 Le protocole est figé avant les calculs : 226 triages et 262 QA, décodage déterministe BF16, batch 32, EOS natif et limites de 192/256 tokens. Le candidat reste celui choisi sur validation. Je récupère les 976 prédictions (488 par modèle), vérifie leur ordre et recalcule les métriques localement : les résultats sont identiques aux rapports Colab. Le DPO n'est pas évalué sur ce test, car ses poids finaux sont absents de Drive.
 
@@ -157,7 +170,7 @@ Le gain sur le socle inclut l'apprentissage du format de réponse. Je ne l'inter
 
 La macro-F1 priorité est de 0,7804 en français et 0,7911 en anglais ; le rappel des urgents est respectivement de 42/49 et 46/49. Le classement relatif des langues change selon la partition. Les deux traductions d'un cas ne sont pas des observations indépendantes.
 
-L'absence de réponse QCM correcte confirme la perte de la capacité QA après la spécialisation. Je garde ce modèle comme démonstrateur de triage. Les variantes ultérieures sont comparées sur validation uniquement ; puisque le test a déjà été consulté, une confirmation indépendante demanderait de nouveaux cas.
+L'absence de réponse QCM correcte confirme la perte de la capacité QA après la spécialisation. Ce résultat motive l'expérience suivante. Les variantes ultérieures, dont le SFT mixte finalement déployé, sont comparées sur validation uniquement ; puisque le test a déjà été consulté, une confirmation indépendante demanderait de nouveaux cas.
 
 <!-- page -->
 ## 6. Réduire l'oubli avec un seul SFT mixte
@@ -167,8 +180,8 @@ L'absence de réponse QCM correcte confirme la perte de la capacité QA après l
 Je repars du socle avec un nouveau LoRA et l'union des deux trains v3 : 2 098 QA et 1 888 triages. Les 3 986 exemples sont mélangés sans répétition artificielle, avec autant de français que d'anglais. Je conserve la validation v3, le prompt et l'EOS. Cette expérience change la recette complète ; elle n'isole pas causalement le seul ordre des tâches.
 
 ```text
-Socle → QA puis triage → SFT v3, actuellement déployé
-     └→ QA et triage ensemble → checkpoints des époques 1, 2, 3
+Socle → QA puis triage → SFT successif v3, déployé jusqu'au 9 novembre
+     └→ QA et triage ensemble → époques 1, 2, 3 ; époque 3 déployée
                                       ↓
                          QA et triage mesurés séparément
 ```
@@ -212,7 +225,7 @@ La loss de validation passe d'environ 0,4794 à l'époque 4 à 0,5115 à l'époq
 
 **Point de traçabilité :** le dossier final `adapter/` contient les poids restaurés de l'époque 4, meilleure loss de cette poursuite, et non ceux de l'époque 10. Les comparaisons utilisent les checkpoints explicites. Les paires FR/EN ne sont pas indépendantes ; une variation d'une entrée n'établit pas un gain robuste.
 
-**Décision :** je conserve l'époque 3 comme référence expérimentale équilibrée. Je ne prolonge plus la même recette sans nouvelle hypothèse. Le Space reste sur le SFT successif v3.
+**Décision :** je retiens l'époque 3 et je la déploie. Un assistant qui a perdu ses connaissances médicales générales n'est pas un socle acceptable, et le mixte fait au moins aussi bien sur la macro-F1, l'ESI exact (75,2 % contre 73,1 %), le sur-triage (18,1 % contre 21,8 %) et la cohérence bilingue. J'accepte en connaissance de cause quatre entrées urgentes manquées en plus sur 100, toutes des ESI 2 classés 3 ; c'est l'erreur que le DPO ciblé cherche ensuite à corriger. Je ne prolonge plus la même recette sans nouvelle hypothèse.
 
 <!-- page -->
 ## 8. Préparer un DPO utile au triage
@@ -254,6 +267,20 @@ Le signal favorable exige : rappel urgent en hausse, recul de macro-F1 limité �
 Le minage retient 440 erreurs, séparées en 355 paires de train et 85 de contrôle interne. Le train contient 234 sur-triages (66 %), 72 sous-triages critiques et 49 autres sous-triages. Ce déséquilibre peut expliquer une baisse de l'urgence prédite ; ce n'est pas une preuve causale. Les deux checkpoints échouent aux critères de rappel et macro-F1. Je conserve la référence SFT mixte. Une nouvelle référence clinique indépendante reste nécessaire.
 
 <!-- page -->
+## 8.1 Sécurité, hallucinations et biais
+
+| Risque | Ce que j'observe | Parade dans le POC | Reste à faire |
+|---|---|---|---|
+| Sous-triage | 9 urgences sur 100 classées ESI 3 en validation (7 cas) | Proposition toujours soumise au soignant ; rappel urgent suivi comme critère de sélection | Référence clinique, seuil d'acceptation fixé par les soignants |
+| Hallucination dans la justification | Fièvre absente du cas citée en validation ; le 10 novembre, « hypotension » citée pour une tension saisie à 150/90, à l'identique sous Transformers et sous vLLM, avec un ESI 2 pourtant cohérent | Avertissement systématique ; le parseur ne contrôle que la structure | Vérifier que chaque élément cité figure dans la saisie |
+| Réponse dangereuse hors triage | La QA plafonne à 57 % de QCM corrects | L'interface ne propose que le parcours de triage | Refus explicite des questions thérapeutiques |
+| Biais d'annotation | Étiquettes produites par trois LLM, cas ambigus exclus | Consensus jusqu'à l'ESI exact, abstention autorisée | Double lecture humaine d'un échantillon |
+| Biais de langue et de population | Écart FR/EN variable selon la partition ; vignettes d'examen, peu de pédiatrie ou de gériatrie réelles | Mesures par langue, paires FR/EN groupées | Cas réels représentatifs du service |
+| Détournement de l'entrée | Balises de rôle et entrées trop longues | Refus 422 sans appel au modèle | Tests d'intrusion dédiés |
+
+Deux exemples résument le comportement. **Succès** : douleur thoracique constrictive avec sueurs, ESI 2 et priorité maximale dans les deux moteurs. **Échec** : entorse de cheville chez une patiente qui marche, classée ESI 3 avec biologie et imagerie anticipées, alors que la consigne ESI du projet conduit plutôt à une seule ressource, donc ESI 4 ; c'est un sur-triage probable, sans danger mais coûteux, que je n'ai pas fait relire par un soignant. Une sortie bien formée peut donc rester fausse : le format ne vaut pas validation.
+
+<!-- page -->
 ## 9. Déployer un prototype traçable
 
 Je sépare la collecte, le moteur d'inférence et l'audit. Le questionnaire demande les champs manquants et adapte une question à la présence lexicale de douleur. Il ne constitue pas un protocole clinique et ne délègue pas la conduite de l'entretien au LoRA. Le mode cas complet transmet directement la présentation saisie.
@@ -276,7 +303,7 @@ Je sépare la collecte, le moteur d'inférence et l'audit. Le questionnaire dema
 | Démonstration gratuite | Gradio → Transformers / PEFT → ZeroGPU | Fonctionnelle sur Hugging Face |
 | API du POC | FastAPI → vLLM + LoRA → contrôle → SQLite | Vérifiée sur A100 40 Go, trois cas fictifs |
 
-Le sélecteur FR/EN traduit l'interface et réinitialise le cas. Les réglages exposent le mode guidé ou complet et les détails techniques ; les paramètres de génération restent fixés. Le même adaptateur est identifié par SHA256 avant publication.
+Le sélecteur FR/EN traduit l'interface et réinitialise le cas. Les réglages exposent le mode guidé ou complet et les détails techniques ; les paramètres de génération restent fixés. Les deux voies lisent `serving/modele.json` : le SFT mixte époque 3 y est identifié par son SHA256 (`62d4e508…`), vérifié avant le démarrage de vLLM et avant chaque publication du Space.
 
 L'API protège consultations et traces par une clé. Elle vérifie le modèle disponible, la longueur d'entrée et la cohérence ESI/priorité. Une sortie interrompue ou invalide conduit à une revue humaine sans priorité. Une panne du journal empêche la délivrance d'une proposition. Le contrat JSON simule une intégration SIH, sans connecteur hospitalier réel.
 
@@ -287,15 +314,57 @@ Les traces SQLite sont en clair et ne sont pas immuables ; la clé partagée n'i
 <!-- page -->
 ## 9.1 Vérifications réalisées
 
-Les tests locaux contrôlent données, métriques, formats, API et Space ; les tests du DPO ciblé ajoutent les contrôles de provenance, de séparation des cas et des garde-fous. La suite actuelle exécute 51 tests ; le premier run CI en avait exécuté 35 sur les données, métriques, API et Space, construit Docker et publié le paquet autorisé. Le test du conflit de port est ajouté à cette suite. Le run GitHub Actions 42074793162 est réussi : la révision attendue du Space est effectivement démarrée. Aucun corpus ni secret n'est envoyé dans ce paquet.
+Les tests locaux contrôlent données, métriques, formats, API et Space ; les tests du DPO ciblé ajoutent les contrôles de provenance, de séparation des cas et des garde-fous. La suite actuelle exécute 52 tests avec Pytest, avant toute étape de déploiement ; le premier run CI en avait exécuté 35 sur les données, métriques, API et Space, construit Docker et publié le paquet autorisé. Le test du conflit de port est ajouté à cette suite. Le run GitHub Actions 42074793162 est réussi : la révision attendue du Space est effectivement démarrée. Aucun corpus ni secret n'est envoyé dans ce paquet.
 
-Deux parcours fictifs FR/EN ont produit une inférence réelle : 5,115 s et 3,870 s côté serveur, appel ZeroGPU inclus. Il s'agit de deux observations, pas d'un test de charge. Un essai ultérieur du mode direct a atteint le quota invité ; l'interface a présenté une indisponibilité sans priorité.
+Avec le SFT successif, deux parcours fictifs FR/EN ont produit une inférence réelle : 5,115 s et 3,870 s côté serveur, appel ZeroGPU inclus. Il s'agit de deux observations, pas d'un test de charge. Après la bascule du 10 novembre, je vérifie le SFT mixte sur deux parcours fictifs en local (mêmes fonctions que le Space, GPU 24 Go) puis sur le Space redéployé, révision `f32b2a65` : le parcours français aboutit à la même proposition ESI 2 dans les deux cas. Un essai ultérieur du mode direct a atteint le quota invité ; l'interface a présenté une indisponibilité sans priorité.
 
-La vérification vLLM réelle sur A100 40 Go mesure 6,935 s, 0,385 s et 0,514 s par requête HTTP, soit une médiane de 0,514 s. Le premier appel comprend potentiellement des initialisations. Les trois traces SQLite concordent avec les réponses ; les contrôles HTTP renvoient 401 sans clé, 422 pour une entrée invalide et une question pour un cas incomplet.
+La vérification vLLM réelle sur A100 40 Go, faite le 5 novembre avec le SFT successif, mesure 6,935 s, 0,385 s et 0,514 s par requête HTTP, soit une médiane de 0,514 s. Le premier appel comprend potentiellement des initialisations. Les trois traces SQLite concordent avec les réponses ; les contrôles HTTP renvoient 401 sans clé, 422 pour une entrée invalide et une question pour un cas incomplet.
 
 Le cas anglais produit « delayed emergency » au lieu du libellé attendu « delayed urgency ». L'API retourne une revue humaine sans priorité. Cette observation montre une fragilité du contrat linguistique ; je ne relâche pas le contrôle après le test. Trois requêtes ne prouvent ni la capacité en charge ni la pertinence clinique.
 
-La démonstration permanente utilise Transformers. L'essai vLLM est interne à une VM Colab temporaire, sans endpoint public persistant. Cet écart avec l'hébergement demandé reste explicite. Le conflit initial sur le port 8080 est corrigé en réservant un port libre transmis à Uvicorn ; un test CPU reproduit ce conflit.
+La démonstration permanente utilise Transformers. L'essai vLLM est interne à une VM Colab temporaire, sans endpoint public persistant. Le conflit initial sur le port 8080 est corrigé en réservant un port libre transmis à Uvicorn ; un test CPU reproduit ce conflit.
+
+### Endpoint vLLM public du 10 novembre
+
+Le notebook 09 démarre vLLM 0.32.0 et l'API FastAPI sur une L4 de 23 Go louée sur Colab, avec le SFT mixte époque 3, puis les expose par un tunnel HTTPS protégé par clé. La vérification automatique passe par l'URL publique : trois cas fictifs séquentiels répondent en 7,74 s, 0,90 s et 1,23 s (médiane 1,23 s ; le premier appel inclut des initialisations), puis huit requêtes simultanées aboutissent toutes en 1,54 s. Depuis mon poste, hors Colab et sans clé, `/healthz` répond 200 et les routes protégées 401. Un parcours saisi dans la page de démo aboutit en 1,24 s à la même proposition ESI 2, mot pour mot, que Transformers en local et sur le Space, hallucination comprise : elle vient donc du modèle et non du moteur.
+
+Le journal d'audit contient les 16 interactions de la session : 8 propositions, 4 demandes de complément et 4 revues humaines. Ces quatre revues concernent le même cas anglais, pour lequel le modèle écrit « delayed emergency » au lieu du libellé attendu : le défaut déjà vu le 5 novembre persiste avec le mixte et je ne relâche pas le contrôle. Le journal HTTP relie 30 requêtes entrantes à leurs appels vLLM, refus 401 inclus, sans clé ni corps. J'ai arrêté le service après une vingtaine de minutes ; l'URL n'existe plus. Ce n'est ni un hébergement permanent ni un test de charge.
+
+<!-- page -->
+## 9.2 Coût et performance de l'infrastructure
+
+### Entraînement
+
+| Calcul sur Colab, évaluations comprises | Durée observée |
+|---|---|
+| SFT successif, phase triage (357 pas) | 3 min 42 s |
+| DPO généraliste, 32 pas | 1 min 40 s |
+| SFT mixte, 3 époques et 3 validations (G4) | 16 min 25 s |
+| Poursuite, 7 époques et 7 validations | 46 min 49 s |
+| DPO ciblé, minage, 32 pas et 3 validations (G4) | 12 min 03 s |
+
+Ces cinq calculs totalisent 1 h 21 de GPU. En ajoutant la phase QA, le test final, les essais interrompus et les installations, je reste à quelques heures de GPU. À titre d'ordre de grandeur, une A100 40 Go consomme environ 5,4 unités Colab par heure, soit près de 0,55 $ de l'heure à 10 $ les 100 unités (relevé tiers de mars 2026, variable) : l'ensemble des entraînements coûte quelques dollars. Une époque du SFT mixte prend environ 4 minutes ; la validation des 500 exemples, 77 secondes. Le premier essai mixte sur A100 40 Go a dépassé la VRAM au pas 62 avec un contexte de 5 120 tokens : la longueur des réponses QA, pas la taille du modèle, dimensionne la mémoire d'entraînement.
+
+### Inférence
+
+| Moteur | Matériel | Mesure | Lecture |
+|---|---|---|---|
+| vLLM + FastAPI, SFT successif | A100 40 Go, appels internes | 0,385 s et 0,514 s par requête après un premier appel à 6,9 s | 51 et 73 tokens générés, soit de l'ordre de 130 à 140 tokens/s en séquentiel |
+| vLLM + FastAPI, SFT mixte | L4 23 Go, URL HTTPS publique | 0,90 s et 1,23 s par requête après un premier appel à 7,7 s | 50 et 70 tokens générés, soit environ 60 tokens/s en séquentiel |
+| Même endpoint, 8 requêtes simultanées | L4 23 Go | 8 réponses en 1,54 s : 5,2 requêtes/s et 329 tokens/s | Latence par requête inchangée (0,9 à 1,4 s) : le traitement par lots multiplie le débit par cinq environ |
+| Transformers + PEFT | ZeroGPU | 3,9 s et 5,1 s par proposition | Inclut l'attribution du GPU à chaque appel |
+
+C'est le bénéfice attendu de vLLM : huit patients simultanés attendent à peine plus qu'un seul. Cette mesure porte sur huit requêtes et un seul essai ; elle ne dit rien d'une charge soutenue ni de la saturation. L'écart avec ZeroGPU tient au moteur et à l'attribution du GPU, que je n'ai pas mesurés séparément. Sur Colab, une L4 consomme environ 1,7 unité par heure, soit près de 0,17 $ (relevé tiers) : la session de vérification a coûté quelques centimes.
+
+### Déploiement
+
+| Option | Coût indicatif | Usage |
+|---|---|---|
+| Space ZeroGPU | 0 € ; quotas et file d'attente | Démonstration |
+| Colab + tunnel, à la demande | Environ 0,17 $ par heure de L4, 0,55 $ par heure d'A100 | Soutenance, essais ponctuels |
+| Endpoint dédié, GPU L4 24 Go | Environ 0,80 $ par heure (tarif public Hugging Face Inference Endpoints), soit près de 580 $ par mois en continu, ou 190 $ à 8 h par jour | Pilote |
+
+Un modèle de 1,7 milliard de paramètres en BF16 occupe moins de 4 Go de VRAM : un GPU de 24 Go suffit et laisse de la marge pour le traitement par lots. Un socle 32B changerait d'échelle : plusieurs GPU ou une quantification, et un coût horaire plusieurs fois supérieur. Ces montants sont des ordres de grandeur publics, pas des devis ; un hébergement certifié HDS, obligatoire avec des données de patients, coûtera davantage.
 
 <!-- page -->
 ## 10. Conservation, limites et recommandations
@@ -323,7 +392,7 @@ La revue des dépendances a conduit à actualiser Flask, Gunicorn et Waitress da
 | Niveau | Condition |
 |---|---|
 | Preuves techniques | Test final et vLLM vérifiés ; récupération finale DPO généraliste incomplète |
-| Conformité au livrable cloud vLLM | Endpoint public vLLM à activer et vérifier ; une justification seule ne remplace pas la preuve |
+| Conformité au livrable cloud vLLM | Endpoint public vérifié le 10 novembre sur GPU Colab ; il est temporaire et se relance par le notebook 09, sans hébergement permanent |
 | Données | Clarification des licences et revue humaine de l'anonymisation |
 | Pertinence clinique | Évaluation indépendante par des professionnels, notamment des erreurs graves |
 | Usage réel | Accès par rôle, journal sécurisé, supervision, protection des données et gouvernance |
@@ -333,12 +402,25 @@ La revue des dépendances a conduit à actualiser Flask, Gunicorn et Waitress da
 
 1. Préserver les preuves finales et expliquer les écarts : sauvegarde DPO généraliste incomplète et hébergement public Transformers. Ne pas relancer un entraînement pour masquer un résultat défavorable du test.
 2. Constituer une référence clinique indépendante : cas ambigus, urgences rares, informations absentes, négations et situations hors distribution.
-3. Conserver le SFT mixte époque 3 comme référence expérimentale et ne pas retenir le DPO ciblé défavorable. Une éventuelle suite comparerait des préférences mieux équilibrées et relues, sans prolonger arbitrairement les époques.
+3. Conserver le SFT mixte époque 3 en démonstration et ne pas retenir le DPO ciblé défavorable. Une éventuelle suite comparerait des préférences mieux équilibrées et relues, sans prolonger arbitrairement les époques.
 4. Faire relire les préférences et les erreurs importantes par des professionnels avant toute conclusion clinique.
 5. Tester le système complet : questionnaire, explications, abstention, charge, latence et comportement lors des pannes.
 6. Définir un pilote encadré avec validation humaine, seuils d'acceptation, surveillance et retour arrière avant toute extension.
 
 Un modèle de 32B+ reste une piste de projection. Il ne corrige pas automatiquement les biais d'annotation, les fuites ou les défauts de protocole. Je comparerais ses bénéfices à ceux d'une meilleure référence et d'un apprentissage mieux ciblé.
+
+### Conditions de passage au pilote (go / no-go)
+
+| Condition | Critère proposé | État |
+|---|---|---|
+| Référence clinique | Jeu indépendant relu par des soignants, urgences rares incluses | À constituer |
+| Sécurité | Aucun ESI 1 manqué ; taux de sous-triage ESI 2 fixé et validé par les urgentistes | Non atteint : 9 sur 100 en validation silver |
+| Fidélité | Justifications sans élément absent de la saisie, sur un échantillon relu | Non atteint : deux cas relevés |
+| Service | Endpoint vLLM dédié, latence et débit mesurés sous charge, reprise après panne | Partiel : latence et débit sur 8 requêtes, endpoint temporaire |
+| Données | Hébergement HDS, journal chiffré, accès nominatif, analyse d'impact | À faire |
+| Exploitation | Supervision, alertes sur le taux de revue humaine et la dérive, retour arrière | À faire |
+
+Tant qu'une ligne reste ouverte, ma recommandation est de ne pas exposer le système à des patients : le POC reste un démonstrateur.
 
 <!-- page -->
 ## Annexe. Retrouver les preuves et reproduire la démarche
@@ -367,9 +449,9 @@ L'entraînement est séparé du déploiement : le workflow de publication vérif
 
 ### Sources et provenance
 
-Les notebooks 01 à 08, les manifestes de partitions, bilan_v3.json et les protocoles d'entraînement constituent les preuves locales. Les annotations proviennent de LLM ; la préparation du code et de la documentation est assistée par des outils d'IA. Je n'attribue pas à une revue clinique les contrôles automatiques effectués.
+Les notebooks 01 à 09, les manifestes de partitions, bilan_v3.json et les protocoles d'entraînement constituent les preuves locales. Les annotations proviennent de LLM ; la préparation du code et de la documentation est assistée par des outils d'IA. Je n'attribue pas à une revue clinique les contrôles automatiques effectués.
 
-Référence DPO : https://huggingface.co/docs/trl/dpo_trainer. Références de service : docs.vllm.ai/en/v0.32.0/getting_started/installation/gpu/ ; huggingface.co/docs/hub/spaces-zerogpu ; huggingface.co/docs/hub/spaces-github-actions. Démonstration : huggingface.co/spaces/rayakevin/ocr14-triage-fr-en. CI : github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162.
+Référence DPO : https://huggingface.co/docs/trl/dpo_trainer. Références de service : docs.vllm.ai/en/v0.32.0/getting_started/installation/gpu/ ; huggingface.co/docs/hub/spaces-zerogpu ; huggingface.co/docs/hub/spaces-github-actions. Tarifs : huggingface.co/docs/inference-endpoints/pricing ; mccormickml.com/2024/04/23/colab-gpus-features-and-pricing/. Démonstration : huggingface.co/spaces/rayakevin/ocr14-triage-fr-en. CI : github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162.
 
 
 <!-- page -->
@@ -383,8 +465,8 @@ distant des quatre configurations du dataset est vérifié. Les métadonnées ab
 sont uniformisées à null pour HF Datasets ; les textes et partitions restent identiques.
 
 Le dépôt dataset expose QA, triage, préférences générales et préférences ciblées.
-La racine du dépôt modèle contient le SFT mixte époque 3 ; les sous-dossiers gardent
-le successif v3 et les DPO ciblés 16/32, explicitement non retenus. Les fichiers
+La racine du dépôt modèle contient le SFT mixte époque 3, déployé ; les sous-dossiers gardent
+le successif v3, évalué sur le test final, et les DPO ciblés 16/32, explicitement non retenus. Les fichiers
 empreintes.json permettent de contrôler le contenu. Le dépôt privé ne résout pas
 les restrictions de licence ; je vérifie séparément les droits d’accès de l’évaluateur.
 
@@ -394,9 +476,9 @@ Les graphiques sont des exports agrégés sans cas individuel. Les animations so
 explicatives et ne consomment pas de GPU. Le lien MLflow ouvre le serveur local
 préalablement lancé ; ce n’est pas un service public hébergé dans le Space.
 
-Le notebook 09 prépare une voie vLLM publique temporaire : Colab, API authentifiée,
-tunnel HTTPS, trois requêtes fictives de contrôle, sauvegarde puis arrêt automatique.
-Cette procédure n’est pas encore une preuve d’exposition réussie. Une URL de
+Le notebook 09 ouvre une voie vLLM publique temporaire : Colab, API authentifiée,
+tunnel HTTPS, trois requêtes fictives de contrôle, mesure de débit, sauvegarde puis arrêt.
+Son exécution du 10 novembre est conservée avec ses journaux. Une URL de
 production stable nécessiterait un hébergement GPU dédié, une supervision et un
 budget ; je ne présente pas un tunnel de démonstration comme un service permanent.
 

@@ -15,7 +15,7 @@ def commande(adaptateur):
     """Refuse un adaptateur différent de celui évalué ; retourne la commande sans secret."""
     poids = adaptateur / 'adapter_model.safetensors'
     if hashlib.sha256(poids.read_bytes()).hexdigest() != MANIFESTE['adapter_sha256']:
-        raise ValueError('Les poids ne correspondent pas au SFT v3 sélectionné.')
+        raise ValueError('Les poids ne correspondent pas au SFT mixte époque 3 sélectionné.')
     config = json.loads((adaptateur / 'adapter_config.json').read_text())
     rang = config['r']
     if rang not in (8, 16, 32, 64, 128, 256):

@@ -21,7 +21,7 @@ def preparer(adaptateur, destination):
     """Vérifie le LoRA retenu et refuse de mélanger le paquet à un dossier existant."""
     poids = adaptateur / 'adapter_model.safetensors'
     if hashlib.sha256(poids.read_bytes()).hexdigest() != MODELE['adapter_sha256']:
-        raise ValueError('Poids différents du SFT v3 sélectionné.')
+        raise ValueError('Poids différents du SFT mixte époque 3 sélectionné.')
     configuration = json.loads((adaptateur / 'adapter_config.json').read_text())
     if configuration['base_model_name_or_path'] != MODELE['socle']:
         raise ValueError('Socle de l’adaptateur différent du manifeste.')
@@ -56,7 +56,7 @@ def main():
                           space_hardware=SpaceHardware.ZERO_A10G, private=False, exist_ok=False)
     print(url)
     commit = api.upload_folder(repo_id=args.publier, repo_type='space', folder_path=args.destination,
-                               commit_message='Démonstration SFT triage v3 avec Gradio et ZeroGPU')
+                               commit_message='Démonstration SFT mixte époque 3 avec Gradio et ZeroGPU')
     preuve = {'url': str(url), 'commit': commit.oid, 'fichiers_sha256': empreintes,
               'hardware_demande': 'zero-a10g', 'inference_verifiee': False}
     args.destination.with_suffix('.publication.json').write_text(
