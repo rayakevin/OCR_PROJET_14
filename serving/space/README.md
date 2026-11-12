@@ -45,7 +45,7 @@ sans attribution de priorité. Une sortie correctement structurée peut rester f
 Je réserve ZeroGPU à la génération finale ; le formulaire s'exécute sur CPU.
 Je conserve une trace par session avec les entrées, la sortie, la provenance
 du modèle et la durée. Elle est téléchargeable en JSON et temporaire sur le
-serveur : **je la télécharge pour la conserver**. Il n'existe ni historique
+serveur : **seul son téléchargement permet de la conserver localement**. Il n'existe ni historique
 partagé, ni base patient, ni garantie d'archivage ou d'immutabilité.
 
 L'hébergement gratuit impose des quotas et une file d'attente. Cette variante

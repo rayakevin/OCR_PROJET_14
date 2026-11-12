@@ -301,7 +301,7 @@ Je sépare la collecte, le moteur d'inférence et l'audit. Le questionnaire dema
 | Voie | Chaîne | Statut |
 |---|---|---|
 | Démonstration gratuite | Gradio → Transformers / PEFT → ZeroGPU | Fonctionnelle sur Hugging Face |
-| API du POC | FastAPI → vLLM + LoRA → contrôle → SQLite | Vérifiée sur A100 40 Go, trois cas fictifs |
+| API du POC | FastAPI → vLLM + LoRA → contrôle → SQLite | Vérifiée sur A100 puis en HTTPS public sur L4 le 10 novembre |
 
 Le sélecteur FR/EN traduit l'interface et réinitialise le cas. Les réglages exposent le mode guidé ou complet et les détails techniques ; les paramètres de génération restent fixés. Les deux voies lisent `serving/modele.json` : le SFT mixte époque 3 y est identifié par son SHA256 (`62d4e508…`), vérifié avant le démarrage de vLLM et avant chaque publication du Space.
 
@@ -322,7 +322,7 @@ La vérification vLLM réelle sur A100 40 Go, faite le 5 novembre avec le SFT su
 
 Le cas anglais produit « delayed emergency » au lieu du libellé attendu « delayed urgency ». L'API retourne une revue humaine sans priorité. Cette observation montre une fragilité du contrat linguistique ; je ne relâche pas le contrôle après le test. Trois requêtes ne prouvent ni la capacité en charge ni la pertinence clinique.
 
-La démonstration permanente utilise Transformers. L'essai vLLM est interne à une VM Colab temporaire, sans endpoint public persistant. Le conflit initial sur le port 8080 est corrigé en réservant un port libre transmis à Uvicorn ; un test CPU reproduit ce conflit.
+La démonstration permanente utilise Transformers. L'essai vLLM du 5 novembre est interne à une VM Colab temporaire ; la vérification publique du 10 novembre est décrite ci-dessous. Aucun endpoint vLLM permanent n'est maintenu. Le conflit initial sur le port 8080 est corrigé en réservant un port libre transmis à Uvicorn ; un test CPU reproduit ce conflit.
 
 ### Endpoint vLLM public du 10 novembre
 
@@ -455,7 +455,7 @@ Référence DPO : https://huggingface.co/docs/trl/dpo_trainer. Références de s
 
 
 <!-- page -->
-## Remise et support de soutenance
+## Accès aux ressources du projet
 
 Je versionne le corpus et les adaptateurs dans deux dépôts Hugging Face privés :
 https://huggingface.co/datasets/rayakevin/ocr14-medical-bilingue-v3 et
@@ -468,13 +468,12 @@ Le dépôt dataset expose QA, triage, préférences générales et préférences
 La racine du dépôt modèle contient le SFT mixte époque 3, déployé ; les sous-dossiers gardent
 le successif v3, évalué sur le test final, et les DPO ciblés 16/32, explicitement non retenus. Les fichiers
 empreintes.json permettent de contrôler le contenu. Le dépôt privé ne résout pas
-les restrictions de licence ; je vérifie séparément les droits d’accès de l’évaluateur.
+les restrictions de licence ; l’accès distant nécessite une autorisation, et les fichiers sont inclus dans la remise.
 
-L’onglet Soutenance du Space reprend un parcours de quinze minutes : besoin,
-données, entraînements, résultats, pipeline animé, démonstration, MLflow et décision.
-Les graphiques sont des exports agrégés sans cas individuel. Les animations sont
-explicatives et ne consomment pas de GPU. Le lien MLflow ouvre le serveur local
-préalablement lancé ; ce n’est pas un service public hébergé dans le Space.
+La présentation graphique explique les données, les entraînements, les résultats
+et l’architecture. Les graphiques publics sont agrégés, sans cas individuel.
+La vue interactive contient des exports MLflow ; le serveur MLflow complet reste
+local et nécessite les archives d’expériences, qui ne sont pas incluses dans Git.
 
 Le notebook 09 ouvre une voie vLLM publique temporaire : Colab, API authentifiée,
 tunnel HTTPS, trois requêtes fictives de contrôle, mesure de débit, sauvegarde puis arrêt.
@@ -482,8 +481,9 @@ Son exécution du 10 novembre est conservée avec ses journaux. Une URL de
 production stable nécessiterait un hébergement GPU dédié, une supervision et un
 budget ; je ne présente pas un tunnel de démonstration comme un service permanent.
 
-Le ZIP de remise utilise Raya_Kevin et le mois 102026, correspondant au premier
-commit du projet. Il regroupe dataset, adaptateurs, PDF, code/API/CI, support HTML,
-liens et empreintes. Les secrets, documents personnels et éléments étrangers au
-projet sont exclus. Le statut de l’endpoint vLLM public reste indiqué tant que la
-vérification n’est pas réalisée.
+Dans la remise du 12 novembre 2026, je fournis les datasets, les adaptateurs SFT et
+DPO ciblés, le rapport PDF, la présentation HTML et le nécessaire au lancement de
+l’endpoint vLLM temporaire. Le dépôt GitHub public donne accès au code, aux notebooks
+et au pipeline CI/CD. Les données et poids sont inclus car leurs dépôts HF sont privés.
+Les secrets et notes personnelles sont exclus. La vérification publique du 10 novembre
+est réalisée ; une démonstration en direct nécessite de relancer le notebook 09.

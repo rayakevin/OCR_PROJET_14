@@ -15,7 +15,7 @@ Modèle après DPO
 ## Règles communes
 
 - J’utilise le split de validation pour choisir les hyperparamètres et le checkpoint.
-- Je garde le split de test fermé jusqu’à la comparaison d’une étape terminée.
+- Le test final a été ouvert le 5 novembre pour le socle et le SFT successif ; les variantes suivantes sont comparées sur validation.
 - Je génère sans échantillonnage (`do_sample=False`) afin de rendre les comparaisons reproductibles.
 - Je conserve chaque réponse brute en JSONL avant de calculer les métriques.
 - Je compare aussi chaque checkpoint sur la tâche précédente afin de détecter un oubli catastrophique.
@@ -26,9 +26,9 @@ Modèle après DPO
 | Bloc | Mesure principale | Mesures complémentaires |
 |---|---|---|
 | MediQAl QCM | accuracy de la lettre A–E | taux de réponse analysable |
-| MedQuAD ouvert | F1 lexical | revue humaine de justesse et d’invention |
+| MedQuAD ouvert | F1 lexical | revue clinique indépendante à réaliser |
 
-Les métriques lexicales d’une réponse ouverte ne suffisent pas à établir sa qualité médicale. Elles servent à comparer les versions avec une règle stable ; une revue qualitative complète l’analyse.
+Les métriques lexicales d’une réponse ouverte ne suffisent pas à établir sa qualité médicale. Elles servent à comparer les versions avec une règle stable ; une revue qualitative ne remplace pas une validation clinique indépendante.
 
 ## Phase 2 — triage
 
@@ -107,17 +107,16 @@ servent aux métriques historiques et à l'analyse sans doublon.
 - Une paire bilingue de validation partage son prompt anglais avec le train sous
   un autre identifiant. Je présente aussi les scores sur 236 entrées, en excluant
   cette paire, et je retire la paire correspondante du train du nouvel essai.
-- Un autre doublon relie validation et test. Je dois exclure sa paire du futur
-  bilan indépendant, ainsi que signaler les dix entrées de test déjà exposées
-  lors du pilote historique. Le test n'est donc pas entièrement vierge.
+- Un autre doublon relie validation et test. Cette paire est ensuite exclue du
+  bilan v3. Les dix entrées déjà exposées au pilote historique sont également
+  exclues : le test historique initial n’était pas entièrement vierge.
 - Le comptage d'avertissement reconnaît désormais le pluriel « ne remplacent
   pas » / « do not replace », en plus du singulier. Les rapports initiaux restent
   conservés ; le bilan de rappel recalcule la mesure et expose aussi l'ancien taux.
 
 L'audit des identifiants et des prompts est conservé dans
 `data/evaluation/colab_sft_eos_v2/audit_partitions_dpo.json`. Il signale également
-quatre prompts du train DPO communs à la validation ou au test QA : ils doivent
-être exclus avant le DPO. La présence d'un avertissement et l'accord avec les
+quatre prompts du train DPO communs à la validation ou au test QA : ils sont ensuite exclus dans les partitions v3 avant le DPO. La présence d'un avertissement et l'accord avec les
 annotations ne constituent pas une validation clinique.
 
 ## Version v3 : partitions figées et comparaison SFT / DPO
@@ -191,8 +190,8 @@ Dans [07_sft_mixte_colab.ipynb](07_sft_mixte_colab.ipynb), je prépare un nouvea
 LoRA sur l'union QA/triage des partitions v3 : 3 986 exemples d'entraînement
 et 500 de validation. Je conserve trois checkpoints et mesure les deux tâches
 séparément, avec le même protocole de génération que le SFT v3. Le test final
-n'est pas inclus dans le paquet Colab. Cette expérience reste à exécuter ; elle
-ne remplace pas automatiquement le modèle déployé.
+n'est pas inclus dans le paquet Colab. Cette expérience a été exécutée le 6 novembre. L’époque 3 est retenue et
+déployée depuis le 10 novembre ; sa sélection repose sur la validation.
 
 ## Lecture actuelle et DPO ciblé
 
@@ -207,7 +206,7 @@ Les seuils de comparaison sont définis dans `comparer_dpo_triage.py` avant le c
 Le rappel urgent doit augmenter sans dégradation excessive du QA, de la macro-F1,
 du sur-triage ou du format. Une hausse marginale n'est pas une preuve clinique.
 
-Pour montrer les courbes, je lance depuis la racine :
+Les courbes archivées se consultent localement, après récupération des archives :
 ` .venv/bin/python scripts/ouvrir_mlflow.py --experience mixte `.
 
 

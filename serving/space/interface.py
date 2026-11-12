@@ -119,6 +119,6 @@ def creer_interface(generer):
                          sorties + [titre, intro, demarche, reglages, mode, details, aide, nouveau, conservation],
                          cancels=[envoi], api_name=False)
             details.change(lambda visible: gr.update(visible=visible), details, resultat, api_name=False)
-        with gr.Tab('Soutenance · 15 minutes (FR)', id='soutenance'):
+        with gr.Tab('Comprendre le projet (FR)', id='soutenance'):
             gr.HTML(iframe())
     return demo.queue(max_size=16)

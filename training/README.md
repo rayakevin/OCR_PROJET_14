@@ -41,17 +41,15 @@ L'audit a détecté un doublon de prompt entre train et validation triage sous d
 identifiants différents. J'exclus ses deux versions linguistiques du nouvel
 entraînement, sans réécrire les partitions historiques. Je compare les scores
 sur les 238 entrées puis sur les 236 entrées sans la paire contaminée. Un autre
-doublon validation/test doit être écarté du futur bilan indépendant. Le notebook
+doublon validation/test est ensuite écarté des partitions v3. Le notebook
 conserve les identifiants et les empreintes de cet audit.
 
 Le contrôle préliminaire du DPO relève aussi quatre prompts du train DPO présents
-dans la validation ou le test QA. Je dois les retirer avant un entraînement DPO
-et vérifier l'adéquation des préférences au triage ; les scores SFT ne justifient
+dans la validation ou le test QA. Ils sont retirés dans les partitions v3 avant le DPO. Je vérifie l'adéquation des préférences au triage ; les scores SFT ne justifient
 pas à eux seuls le lancement d'un DPO généraliste.
 
-Après les arrêts brutaux observés, j'effectue ces calculs sur Colab. Le diagnostic
-matériel local reste conservé hors des livrables versionnés. Je sauvegarde résultats,
-adaptateurs et suivi dans Drive avant de libérer l'environnement GPU.
+Les calculs GPU sont exécutés sur Colab. Les résultats, les adaptateurs et le suivi
+sont sauvegardés dans Drive avant de libérer l’environnement.
 
 ## Partitions v3 et pilote DPO
 
@@ -78,8 +76,8 @@ constitue ni un entraînement complet ni une validation clinique.
 
 Le pilote exécuté sur Colab améliore la perte DPO de validation (0,6931 →
 0,5361), mais pas la macro-F1 des priorités (0,7715 → 0,7674). Les cinq
-sous-triages critiques persistent. Je conserve donc le SFT v3 comme candidat
-principal du POC, et le DPO comme variante expérimentale. La section 19 du
+sous-triages critiques persistent. À cette étape, je conserve le SFT v3 comme candidat
+principal du POC et le DPO comme variante expérimentale. Le SFT mixte lui succède ensuite. La section 19 du
 notebook détaille aussi l'écart entre langues et la perte de capacité QA.
 Les résultats et les 1 000 prédictions comparatives sont disponibles dans
 `data/evaluation/colab_sft_dpo_v3`, en complément de la sauvegarde Drive.
@@ -87,7 +85,7 @@ Les résultats et les 1 000 prédictions comparatives sont disponibles dans
 ## SFT mixte puis DPO ciblé (6 novembre)
 
 Le notebook 07 part du socle avec un nouveau LoRA sur l'union QA/triage. L'époque 3
-reste la référence expérimentale équilibrée ; les sept époques supplémentaires,
+est retenue et déployée depuis le 10 novembre ; les sept époques supplémentaires,
 avec un nouvel optimiseur et un taux réduit, n'apportent pas de gain global.
 
 Le notebook 08 prépare une autre intervention : `preparer_dpo_triage.py` transforme

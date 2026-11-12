@@ -116,9 +116,8 @@ matériel payant n'a été demandé.
 Depuis le 10 novembre, le Space sert le SFT mixte époque 3 ; un parcours fictif
 vérifie l'inférence réelle après la bascule. Cette variante utilise Transformers/PEFT
 et le même LoRA que l'API, vérifié par SHA256. Le runtime ZeroGPU emploie PyTorch 2.13.0 ; je ne présume
-pas d'une identité numérique avec l'environnement Colab. Je conserve vLLM comme
-voie de vérification de l'exigence technique du projet, et je justifierai
-explicitement tout écart entre l'hébergement gratuit et cette exigence.
+pas d'une identité numérique avec l'environnement Colab. La voie FastAPI/vLLM reste distincte de cet hébergement Transformers ;
+elle a été vérifiée en HTTPS public sur L4 le 10 novembre.
 Les traces restent isolées par session et sont téléchargeables en JSON. Le cache
 temporaire est nettoyé après une heure ; télécharger la trace assure sa conservation
 locale. Cela ne remplace pas un journal hospitalier persistant.
@@ -178,6 +177,11 @@ L'exécution du notebook `06_verification_vllm_colab.ipynb` est confirmée sur A
 port libre. Trois requêtes et leurs traces sont vérifiées : 6,935 s, 0,385 s et
 0,514 s. L'anglais produit « delayed emergency », hors contrat : l'API s'abstient
 et demande une revue humaine. Les contrôles 401, 422 et cas incomplet passent.
-Les appels restent internes à une VM cloud temporaire, sans URL publique persistante. La
-démonstration publique ZeroGPU conserve Transformers ; cet écart avec la forme
-d'hébergement demandée reste explicite dans le rapport.
+Ces appels du 5 novembre sont internes à la VM. Le notebook 09 ajoute une
+exposition HTTPS temporaire, vérifiée le 10 novembre sur L4 avec le SFT mixte
+(médiane 1,23 s sur trois appels ; huit appels simultanés en 1,54 s).
+
+Le lancement Colab nécessite le paquet `ocr14_endpoint_soutenance_20261110.zip`,
+fourni dans la remise avec le notebook, dans `MyDrive/OCR_PROJET_14/`.
+L’URL change à chaque lancement ; l’arrêt est automatique après 60 minutes.
+Le Space public conserve Transformers et ne fournit pas un endpoint vLLM permanent.
