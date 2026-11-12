@@ -326,7 +326,7 @@ La démonstration permanente utilise Transformers. L'essai vLLM du 5 novembre es
 
 ### Endpoint vLLM public du 10 novembre
 
-Le notebook 09 démarre vLLM 0.32.0 et l'API FastAPI sur une L4 de 23 Go louée sur Colab, avec le SFT mixte époque 3, puis les expose par un tunnel HTTPS protégé par clé. La vérification automatique passe par l'URL publique : trois cas fictifs séquentiels répondent en 7,74 s, 0,90 s et 1,23 s (médiane 1,23 s ; le premier appel inclut des initialisations), puis huit requêtes simultanées aboutissent toutes en 1,54 s. Depuis mon poste, hors Colab et sans clé, `/healthz` répond 200 et les routes protégées 401. Un parcours saisi dans la page de démo aboutit en 1,24 s à la même proposition ESI 2, mot pour mot, que Transformers en local et sur le Space, hallucination comprise : elle vient donc du modèle et non du moteur.
+Le notebook 06 démarre vLLM 0.32.0 et l'API FastAPI sur une L4 de 23 Go louée sur Colab, avec le SFT mixte époque 3, puis les expose par un tunnel HTTPS protégé par clé. La vérification automatique passe par l'URL publique : trois cas fictifs séquentiels répondent en 7,74 s, 0,90 s et 1,23 s (médiane 1,23 s ; le premier appel inclut des initialisations), puis huit requêtes simultanées aboutissent toutes en 1,54 s. Depuis mon poste, hors Colab et sans clé, `/healthz` répond 200 et les routes protégées 401. Un parcours saisi dans la page de démo aboutit en 1,24 s à la même proposition ESI 2, mot pour mot, que Transformers en local et sur le Space, hallucination comprise : elle vient donc du modèle et non du moteur.
 
 Le journal d'audit contient les 16 interactions de la session : 8 propositions, 4 demandes de complément et 4 revues humaines. Ces quatre revues concernent le même cas anglais, pour lequel le modèle écrit « delayed emergency » au lieu du libellé attendu : le défaut déjà vu le 5 novembre persiste avec le mixte et je ne relâche pas le contrôle. Le journal HTTP relie 30 requêtes entrantes à leurs appels vLLM, refus 401 inclus, sans clé ni corps. J'ai arrêté le service après une vingtaine de minutes ; l'URL n'existe plus. Ce n'est ni un hébergement permanent ni un test de charge.
 
@@ -392,7 +392,7 @@ La revue des dépendances a conduit à actualiser Flask, Gunicorn et Waitress da
 | Niveau | Condition |
 |---|---|
 | Preuves techniques | Test final et vLLM vérifiés ; récupération finale DPO généraliste incomplète |
-| Conformité au livrable cloud vLLM | Endpoint public vérifié le 10 novembre sur GPU Colab ; il est temporaire et se relance par le notebook 09, sans hébergement permanent |
+| Conformité au livrable cloud vLLM | Endpoint public vérifié le 10 novembre sur GPU Colab ; il est temporaire et se relance par le notebook 06, sans hébergement permanent |
 | Données | Clarification des licences et revue humaine de l'anonymisation |
 | Pertinence clinique | Évaluation indépendante par des professionnels, notamment des erreurs graves |
 | Usage réel | Accès par rôle, journal sécurisé, supervision, protection des données et gouvernance |
@@ -427,19 +427,19 @@ Tant qu'une ligne reste ouverte, ma recommandation est de ne pas exposer le syst
 
 | Emplacement | Fonction |
 |---|---|
-| data_ingestion/01_preparation_donnees.ipynb | Exploration, qualification, consensus et corpus |
-| evaluation/02_evaluation_initiale.ipynb | Socle, métriques et protocole |
-| evaluation/03_execution_colab.ipynb | Corrections, SFT, DPO et choix sur validation |
-| serving/04_poc_et_deploiement.ipynb | Questionnaire, API, audit et déploiement |
-| evaluation/05_finalisation_colab.ipynb | Test figé, vérification vLLM et sauvegarde |
-| evaluation/06_verification_vllm_colab.ipynb | Reprise vLLM sur port libre, sans réévaluer le modèle |
-| evaluation/07_sft_mixte_colab.ipynb | SFT mixte, poursuite et analyse des erreurs |
-| evaluation/08_dpo_triage_cible_colab.ipynb | DPO ciblé terminé, comparaison et non-sélection |
+| notebooks/01_preparation_donnees.ipynb | Exploration, qualification, consensus et corpus |
+| notebooks/02_evaluation.ipynb | Partitions, métriques, protocole et portée du test |
+| notebooks/03_sft.ipynb | SFT successif, mixte et choix sur validation |
+| notebooks/04_dpo.ipynb | Préférences, résultats et non-sélection du DPO |
+| notebooks/05_deploiement.ipynb | Questionnaire, API, CI/CD et vérifications |
+| notebooks/06_lancer_demo_colab.ipynb | Lancement de l'endpoint vLLM HTTPS temporaire |
 | reports/bilan_final_20261105.json | Synthèse des mesures et empreintes des preuves finales |
 | data/processed/partitions_v3 | Partitions nettoyées et manifeste d'exclusions |
 | data/evaluation/colab_sft_dpo_v3 | Prédictions et bilan de validation |
 | data/colab_archive/original | Fichiers distants conservés sans réécriture |
 | data/colab_archive/local | Copie MLflow avec URI d'artefacts locales |
+
+Les carnets 02 à 05 relisent les bilans sauvegardés sur CPU. Les essais intermédiaires y sont résumés ; les journaux détaillés sont conservés en archives locales hors du dépôt public. Le carnet 06 est le lanceur opérationnel GPU. Cette réorganisation ne modifie pas les résultats : le test indépendant concerne le SFT successif, et non le mixte retenu ensuite.
 
 Je repars de la révision du socle et du hash de l'adaptateur inscrits dans serving/modele.json. Je ne substitue pas un checkpoint voisin à des poids manquants. La seed est conservée, mais ne garantit pas une identité numérique entre moteurs ou versions des bibliothèques.
 
@@ -449,7 +449,7 @@ L'entraînement est séparé du déploiement : le workflow de publication vérif
 
 ### Sources et provenance
 
-Les notebooks 01 à 09, les manifestes de partitions, bilan_v3.json et les protocoles d'entraînement constituent les preuves locales. Les annotations proviennent de LLM ; la préparation du code et de la documentation est assistée par des outils d'IA. Je n'attribue pas à une revue clinique les contrôles automatiques effectués.
+Les journaux historiques locaux, les manifestes de partitions, bilan_v3.json et les protocoles d'entraînement constituent les preuves locales. Les annotations proviennent de LLM ; la préparation du code et de la documentation est assistée par des outils d'IA. Je n'attribue pas à une revue clinique les contrôles automatiques effectués.
 
 Référence DPO : https://huggingface.co/docs/trl/dpo_trainer. Références de service : docs.vllm.ai/en/v0.32.0/getting_started/installation/gpu/ ; huggingface.co/docs/hub/spaces-zerogpu ; huggingface.co/docs/hub/spaces-github-actions. Tarifs : huggingface.co/docs/inference-endpoints/pricing ; mccormickml.com/2024/04/23/colab-gpus-features-and-pricing/. Démonstration : huggingface.co/spaces/rayakevin/ocr14-triage-fr-en. CI : github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162.
 
@@ -475,7 +475,7 @@ et l’architecture. Les graphiques publics sont agrégés, sans cas individuel.
 La vue interactive contient des exports MLflow ; le serveur MLflow complet reste
 local et nécessite les archives d’expériences, qui ne sont pas incluses dans Git.
 
-Le notebook 09 ouvre une voie vLLM publique temporaire : Colab, API authentifiée,
+Le notebook 06 ouvre une voie vLLM publique temporaire : Colab, API authentifiée,
 tunnel HTTPS, trois requêtes fictives de contrôle, mesure de débit, sauvegarde puis arrêt.
 Son exécution du 10 novembre est conservée avec ses journaux. Une URL de
 production stable nécessiterait un hébergement GPU dédié, une supervision et un
@@ -486,4 +486,4 @@ DPO ciblés, le rapport PDF, la présentation HTML et le nécessaire au lancemen
 l’endpoint vLLM temporaire. Le dépôt GitHub public donne accès au code, aux notebooks
 et au pipeline CI/CD. Les données et poids sont inclus car leurs dépôts HF sont privés.
 Les secrets et notes personnelles sont exclus. La vérification publique du 10 novembre
-est réalisée ; une démonstration en direct nécessite de relancer le notebook 09.
+est réalisée ; une démonstration en direct nécessite de relancer le notebook 06.

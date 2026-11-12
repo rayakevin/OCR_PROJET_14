@@ -87,11 +87,19 @@ Les paires traduites sont corrélées et les références ne sont pas des labels
 | `.github/workflows/` | Vérification et déploiement automatisés |
 | `reports/` | Rapport, bilans agrégés et présentation graphique du projet |
 
-Les notebooks documentent les expériences dans l’ordre : préparation (01),
-évaluation initiale (02), SFT successif/DPO (03), API (04), test final (05),
-vLLM interne (06), SFT mixte (07), DPO ciblé (08), endpoint public temporaire (09).
-Ils conservent les résultats historiques. Leur numérotation n’impose pas de
-relancer les entraînements ; les calculs coûteux sont désactivés par défaut.
+## Parcours de lecture
+
+Je présente le projet dans [cinq carnets](notebooks/README.md) :
+
+1. [Préparation des données](notebooks/01_preparation_donnees.ipynb).
+2. [Évaluation : données, métriques et protocole](notebooks/02_evaluation.ipynb).
+3. [SFT : successif, mixte et choix du modèle](notebooks/03_sft.ipynb).
+4. [DPO : essais, résultats et décision](notebooks/04_dpo.ipynb).
+5. [Déploiement : architecture, CI/CD et vérifications](notebooks/05_deploiement.ipynb).
+
+Les carnets 02 à 05 relisent les bilans sur CPU, sans entraînement ni inférence.
+Les essais intermédiaires sont résumés et leurs journaux complets (archives locales non publiées)
+sont conservés à part. Le lanceur Colab reste un outil opérationnel séparé.
 
 ## Exécution et vérification
 
@@ -103,7 +111,7 @@ uv sync --frozen
 
 Les [instructions de service](serving/README.md) décrivent le chargement de
 l’adaptateur, les variables d’environnement, Docker et les appels API.
-Le notebook [09](evaluation/09_endpoint_soutenance_colab.ipynb) permet un lancement
+Le notebook [06](notebooks/06_lancer_demo_colab.ipynb) permet un lancement
 Colab ; il nécessite le paquet `ocr14_endpoint_soutenance_20261110.zip`, fourni
 avec le notebook dans la remise, à copier dans `MyDrive/OCR_PROJET_14/`.
 

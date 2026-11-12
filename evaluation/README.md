@@ -1,5 +1,9 @@
 # Protocole d’évaluation
 
+Le [parcours simplifié](../notebooks/README.md) présente les résultats en cinq étapes.
+Ce guide conserve les détails techniques et commandes historiques. Les références
+aux sections des anciens notebooks renvoient aux journaux archivés (archives locales non publiées).
+
 Je mesure les quatre états du modèle avec les mêmes données, le même prompt et les mêmes paramètres de génération :
 
 ```text
@@ -101,7 +105,7 @@ des scripts et des prédictions de référence, paramètres et identifiants MLfl
 ## Contrôles complémentaires après le SFT de triage
 
 Je compare le triage seul et un rappel de QA dans la section 12 de
-`03_execution_colab.ipynb`. La génération reste identique ; les mêmes prédictions
+journal 03 (archives locales non publiées). La génération reste identique ; les mêmes prédictions
 servent aux métriques historiques et à l'analyse sans doublon.
 
 - Une paire bilingue de validation partage son prompt anglais avec le train sous
@@ -165,7 +169,7 @@ Le candidat SFT v3 est figé avant la lecture du test. Le protocole versionné
 conserve prédictions, métriques et artefacts MLflow. Le DPO n'est ajouté que si
 ses poids originaux sont retrouvés et correspondent à leur empreinte.
 
-Le notebook `05_finalisation_colab.ipynb`, également déposé dans Drive, regroupe
+Le notebook journal 05 (archives locales non publiées), également déposé dans Drive, regroupe
 ces mesures avec la vérification vLLM dans un environnement Python séparé. Il ne
 relance aucun entraînement. Les sorties et les erreurs sont sauvegardées dans
 `evaluations/finalisation_20261105` sur Drive, puis réunies dans une archive.
@@ -186,7 +190,7 @@ Le bilan publiable sans corpus est `reports/bilan_final_20261105.json`.
 
 ## Variante : SFT mixte depuis le socle
 
-Dans [07_sft_mixte_colab.ipynb](07_sft_mixte_colab.ipynb), je prépare un nouveau
+Dans journal 07 (archives locales non publiées), je prépare un nouveau
 LoRA sur l'union QA/triage des partitions v3 : 3 986 exemples d'entraînement
 et 500 de validation. Je conserve trois checkpoints et mesure les deux tâches
 séparément, avec le même protocole de génération que le SFT v3. Le test final

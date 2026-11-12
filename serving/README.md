@@ -1,3 +1,5 @@
+Le [carnet Déploiement](../notebooks/05_deploiement.ipynb) présente la synthèse du service et de ses vérifications.
+
 # POC de triage : de l'adaptateur à une interaction traçable
 
 Je sers le SFT mixte époque 3, retenu après la comparaison avec le SFT successif v3
@@ -68,7 +70,7 @@ python -m unittest tests.test_serving -v
 docker build -f serving/Dockerfile -t ocr14-api:local .
 ```
 
-Le notebook `04_poc_et_deploiement.ipynb` exécute les vérifications sur CPU et
+Le notebook POC historique (archives locales non publiées) exécute les vérifications sur CPU et
 explique les limites. Les doubles de test sont explicitement identifiés : leurs
 résultats ne sont pas des prédictions du modèle. Le test du template emploie un
 vrai tokenizer miniature pour détecter une dépendance manquante à Jinja2.
@@ -166,18 +168,18 @@ restent les preuves du chargement et de la génération par le modèle.
 
 ### Vérification ponctuelle sur Colab
 
-Le notebook `evaluation/05_finalisation_colab.ipynb` prépare un environnement
+Le notebook test final archivé (archives locales non publiées) prépare un environnement
 vLLM 0.32.0 séparé de celui de l'évaluation Transformers. `verifier_colab.py`
 contrôle le LoRA, démarre vLLM et FastAPI, mesure trois cas fictifs, vérifie les
 traces et les refus HTTP, puis arrête les processus. Le notebook sauvegarde les
 résultats et synchronise Drive avant de rendre le GPU.
 
-L'exécution du notebook `06_verification_vllm_colab.ipynb` est confirmée sur A100
+L'exécution du notebook reprise vLLM archivée (archives locales non publiées) est confirmée sur A100
 40 Go. Après le conflit de port 8080, Uvicorn reçoit une socket réservée sur un
 port libre. Trois requêtes et leurs traces sont vérifiées : 6,935 s, 0,385 s et
 0,514 s. L'anglais produit « delayed emergency », hors contrat : l'API s'abstient
 et demande une revue humaine. Les contrôles 401, 422 et cas incomplet passent.
-Ces appels du 5 novembre sont internes à la VM. Le notebook 09 ajoute une
+Ces appels du 5 novembre sont internes à la VM. Le lanceur 06 ajoute une
 exposition HTTPS temporaire, vérifiée le 10 novembre sur L4 avec le SFT mixte
 (médiane 1,23 s sur trois appels ; huit appels simultanés en 1,54 s).
 

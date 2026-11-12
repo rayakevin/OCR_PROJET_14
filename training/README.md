@@ -1,5 +1,8 @@
 # Entraînement LoRA
 
+Les carnets [SFT](../notebooks/03_sft.ipynb) et [DPO](../notebooks/04_dpo.ipynb)
+présentent les choix et résultats. Ce guide détaille les scripts et les essais historiques.
+
 Le script `entrainer_lora.py` entraîne le même adaptateur en supervisant uniquement les tokens de la réponse `assistant`. Il sauvegarde l'adaptateur dans `models/` et trace les paramètres et les métriques dans MLflow.
 
 ```bash
@@ -18,7 +21,7 @@ de réflexion vide du tokenizer. Seule la réponse contribue à la loss ; elle s
 termine par l'EOS natif du socle. Je refuse les exemples trop longs plutôt que
 de couper leur réponse ou leur cas. Les jeux QA actuels tiennent dans 5 120 tokens.
 
-Le notebook `evaluation/03_execution_colab.ipynb` conserve les résultats initiaux,
+Le notebook journal Colab archivé (archives locales non publiées) conserve les résultats initiaux,
 explique les défauts constatés et présente le pilote corrigé. Les nouveaux runs
 utilisent un autre dossier. Le protocole sauvegarde les identifiants sélectionnés,
 les empreintes, les versions, la révision du socle et les paramètres MLflow.

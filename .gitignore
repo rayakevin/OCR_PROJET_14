@@ -37,3 +37,6 @@ scripts/generer_rapport.py
 scripts/generer_support.py
 scripts/conditionner_livrables.py
 scripts/preparer_livrables_hf.py
+
+# Journaux historiques des notebooks : sauvegarde locale privée
+/archives/notebooks/
