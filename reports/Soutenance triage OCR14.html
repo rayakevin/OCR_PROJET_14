@@ -124,15 +124,14 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 <main class="stage" id="stage">
 
 <!-- 1 -->
-<section class="slide cover" data-t="0:00">
+<section class="slide cover" data-t="0:00 – 0:20">
   <div class="eyebrow">OCR Projet 14 · Soutenance · Centre Hospitalier Saint-Aurélien</div>
   <h1>Triage médical bilingue</h1>
   <div class="wristband" aria-label="Échelle ESI de 1 à 5"><span style="background:var(--esi1)">1</span><span style="background:var(--esi2)">2</span><span style="background:var(--esi3)">3</span><span style="background:var(--esi4)">4</span><span style="background:var(--esi5)">5</span></div>
   <div class="who">Kevin Raya · IA Engineer · novembre 2026</div>
 </section>
 
-<!-- 2 -->
-<section class="slide" data-t="0:00 – 1:30" hidden>
+<section class="slide" data-t="0:20 – 1:00" hidden>
   <header><div class="eyebrow">Mission</div><h2>Le prototype propose, le soignant décide</h2></header>
   <div class="body">
     <svg class="viz" viewBox="0 0 1156 480" role="img" aria-label="Le patient répond à un questionnaire, le modèle propose un niveau ESI, le soignant décide">
@@ -159,8 +158,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   </div>
 </section>
 
-<!-- 3 -->
-<section class="slide" data-t="0:00 – 1:30" hidden>
+<section class="slide" data-t="1:00 – 1:35" hidden>
   <header><div class="eyebrow">Mission</div><h2>L'erreur à éviter : le sous-triage</h2></header>
   <div class="body">
     <svg class="viz" viewBox="0 0 1156 420" role="img" aria-label="Échelle ESI de 1 à 5 ; le sous-triage classe un ESI 2 en ESI 3">
@@ -181,42 +179,50 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   </div>
 </section>
 
-<!-- 4 -->
-<section class="slide" data-t="1:30 – 4:00" hidden>
-  <header><div class="eyebrow">Données</div><h2>Quatre sources, aucun niveau ESI</h2></header>
+<section class="slide" data-t="1:35 – 2:15" hidden>
+  <header><div class="eyebrow">Architecture</div><h2>Une proposition contrôlée et traçable</h2></header>
   <div class="body">
-    <svg class="viz" viewBox="0 0 1156 480" role="img" aria-label="Contenu des quatre sources : langue, questions-réponses, préférences, cas cliniques ; aucune ne fournit de niveau ESI">
-      <rect x="990" y="6" width="160" height="468" rx="14" fill="var(--bad)" fill-opacity=".07" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="6 6"/>
-      <g text-anchor="middle"><text class="k" x="400" y="40">LANGUE</text><text class="k" x="550" y="40">QUESTIONS-RÉPONSES</text><text class="k" x="740" y="40">PRÉFÉRENCES</text><text class="k" x="890" y="40">CAS CLINIQUES</text><text class="k" x="1070" y="40">NIVEAU ESI</text></g>
-      <path class="axis" d="M0 168H966M0 268H966M0 368H966"/>
-      <text class="b" x="0" y="112" style="font-size:24px">MediQAl</text><text class="s" x="0" y="138">CC BY 4.0</text>
-      <text class="b" x="0" y="212" style="font-size:24px">UltraMedical-Preference</text><text class="s" x="0" y="238">MIT</text>
-      <text class="b" x="0" y="312" style="font-size:24px">MedQuAD</text><text class="s" x="0" y="338">licence non renseignée</text>
-      <text class="b" x="0" y="412" style="font-size:24px">FrenchMedMCQA</text><text class="s" x="0" y="438">licence non renseignée</text>
+    <svg class="viz" viewBox="0 0 1156 470" role="img" aria-label="Saisie, question complémentaire, inférence, contrôle de la sortie, proposition, décision du soignant ; une sortie invalide part en revue humaine ; tout est journalisé">
       <g text-anchor="middle">
-        <rect class="soft" x="366" y="100" width="68" height="38" rx="19"/><text class="v" x="400" y="125">FR</text>
-        <rect class="soft" x="366" y="200" width="68" height="38" rx="19"/><text class="v" x="400" y="225">EN</text>
-        <rect class="soft" x="366" y="300" width="68" height="38" rx="19"/><text class="v" x="400" y="325">EN</text>
-        <rect class="soft" x="366" y="400" width="68" height="38" rx="19"/><text class="v" x="400" y="425">FR</text>
+        <text class="k ka" x="96" y="26">1</text><text class="k ka" x="289" y="26">2</text><text class="k ka" x="482" y="26">3</text><text class="k ka" x="675" y="26">4</text><text class="k ka" x="868" y="26">5</text><text class="k ka" x="1061" y="26">6</text>
+        <circle class="soft" cx="96" cy="94" r="50"/><circle class="soft" cx="289" cy="94" r="50"/><circle class="soft" cx="482" cy="94" r="50"/><circle class="soft" cx="675" cy="94" r="50"/><circle class="soft" cx="868" cy="94" r="50"/><circle class="hl" cx="1061" cy="94" r="50"/>
+        <text class="b" x="96" y="180" style="font-size:22px">Saisie</text><text class="s" x="96" y="206">champs manquants</text>
+        <text class="b" x="289" y="180" style="font-size:22px">Question</text><text class="s" x="289" y="206">script, pas le modèle</text>
+        <text class="b" x="482" y="180" style="font-size:22px">Inférence</text><text class="s" x="482" y="206">adaptateur vérifié</text>
+        <text class="b" x="675" y="180" style="font-size:22px">Contrôle</text><text class="s" x="675" y="206">ESI et priorité</text>
+        <text class="b" x="868" y="180" style="font-size:22px">Proposition</text><text class="s" x="868" y="206">à valider</text>
+        <text class="b" x="1061" y="180" style="font-size:22px">Soignant</text><text class="s" x="1061" y="206">décide</text>
+        <text class="n" x="868" y="103" style="font-size:22px">ESI 2</text>
       </g>
-      <g fill="var(--accent)">
-        <circle cx="550" cy="119" r="15"/><circle cx="890" cy="119" r="15"/>
-        <circle cx="740" cy="219" r="15"/><circle cx="890" cy="219" r="15"/>
-        <circle cx="550" cy="319" r="15"/>
-      </g>
-      <circle cx="550" cy="419" r="14" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="5 4"/><text class="s" x="574" y="425">exploration</text>
-      <g fill="var(--line)"><circle cx="740" cy="119" r="4"/><circle cx="550" cy="219" r="4"/><circle cx="740" cy="319" r="4"/><circle cx="890" cy="319" r="4"/><circle cx="740" cy="419" r="4"/><circle cx="890" cy="419" r="4"/></g>
-      <use href="#i-cross" class="ic bad" x="1050" y="99" width="40" height="40"/><use href="#i-cross" class="ic bad" x="1050" y="199" width="40" height="40"/><use href="#i-cross" class="ic bad" x="1050" y="299" width="40" height="40"/><use href="#i-cross" class="ic bad" x="1050" y="399" width="40" height="40"/>
+      <use href="#i-form" class="ic" x="73" y="71" width="46" height="46"/><use href="#i-chat" class="ic" x="266" y="71" width="46" height="46"/><use href="#i-cpu" class="ic" x="459" y="71" width="46" height="46"/><use href="#i-check" class="ic" x="652" y="71" width="46" height="46"/><use href="#i-person" class="ic a" x="1038" y="71" width="46" height="46"/>
+      <path class="ln" d="M154 94H231" marker-end="url(#ah)"/><path class="ln" d="M347 94H424" marker-end="url(#ah)"/><path class="ln" d="M540 94H617" marker-end="url(#ah)"/><path class="ln" d="M733 94H810" marker-end="url(#ah)"/><path class="ln" d="M926 94H1003" marker-end="url(#ah)"/>
+      <path d="M675 222V276" fill="none" stroke="var(--bad)" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#ahb)"/>
+      <rect class="tbad" x="520" y="286" width="310" height="76" rx="10"/><use href="#i-warn" class="ic bad" x="538" y="307" width="34" height="34"/><text class="b" x="586" y="318">Revue humaine</text><text class="s" x="586" y="344" style="font-size:16px">sortie invalide · aucune priorité</text>
+      <rect class="hl" x="0" y="396" width="1156" height="66" rx="12"/><use href="#i-doc" class="ic a" x="22" y="412" width="34" height="34"/><text class="b" x="72" y="437">Journal d'audit</text><text class="s" x="252" y="437">écrit avant la réponse · X-Request-ID · clé Bearer · entrées filtrées</text>
     </svg>
   </div>
 </section>
 
-<!-- 5 -->
-<section class="slide" data-t="1:30 – 4:00" hidden>
-  <header><div class="eyebrow">Données</div><h2>De 4 007 vignettes à 1 189 cas étiquetés</h2></header>
+<section class="slide cover" data-t="2:15 – 4:45" hidden>
+  <div class="eyebrow">Démonstration</div>
+  <h1>Démonstration</h1>
+  <svg class="viz" viewBox="0 0 1156 150" role="img" aria-label="Cas fictif, question complémentaire, proposition, trace JSON, appel API direct" style="max-width:1000px">
+    <g text-anchor="middle">
+      <circle class="soft" cx="60" cy="52" r="44"/><circle class="soft" cx="319" cy="52" r="44"/><circle class="hl" cx="578" cy="52" r="44"/><circle class="soft" cx="837" cy="52" r="44"/><circle class="soft" cx="1096" cy="52" r="44"/>
+      <text class="b" x="60" y="130">Cas fictif</text><text class="b" x="319" y="130">Question</text><text class="b" x="578" y="130">Proposition</text><text class="b" x="837" y="130">Trace JSON</text><text class="b" x="1096" y="130">API vLLM</text>
+      <text class="n" x="578" y="60" style="font-size:20px">ESI</text>
+    </g>
+    <use href="#i-form" class="ic" x="40" y="32" width="40" height="40"/><use href="#i-chat" class="ic" x="299" y="32" width="40" height="40"/><use href="#i-doc" class="ic" x="817" y="32" width="40" height="40"/><use href="#i-chart" class="ic" x="1076" y="32" width="40" height="40"/>
+    <path class="ln" d="M112 52H267" marker-end="url(#ah)"/><path class="ln" d="M371 52H526" marker-end="url(#ah)"/><path class="ln" d="M630 52H785" marker-end="url(#ah)"/><path class="ln" d="M889 52H1044" marker-end="url(#ah)"/>
+  </svg>
+  <a class="url" href="https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en" target="_blank" rel="noopener">huggingface.co/spaces/rayakevin/ocr14-triage-fr-en</a>
+</section>
+
+<section class="slide" data-t="4:45 – 5:55" hidden>
+  <header><div class="eyebrow">Données</div><h2>Construire une référence de triage</h2></header>
   <div class="body">
     <svg class="viz" id="ch-funnel" viewBox="0 0 1156 470" role="img" aria-label="Trois annotateurs votent ; 4 007 candidats, 1 189 retenus par consensus, 2 378 entrées après traduction">
-      <text class="k" x="0" y="26">3 ANNOTATEURS</text>
+      <text class="k" x="0" y="26">JUSQU’À 3 VOTES PAR CAS</text>
       <circle class="soft" cx="60" cy="92" r="40"/><use href="#i-cpu" class="ic" x="40" y="72" width="40" height="40"/><text class="b" x="60" y="158" text-anchor="middle" style="font-size:18px">Codex</text>
       <circle class="soft" cx="60" cy="232" r="40"/><use href="#i-cpu" class="ic" x="40" y="212" width="40" height="40"/><text class="b" x="60" y="298" text-anchor="middle" style="font-size:18px">Claude</text>
       <circle class="soft" cx="60" cy="372" r="40"/><use href="#i-cpu" class="ic" x="40" y="352" width="40" height="40"/><text class="b" x="60" y="438" text-anchor="middle" style="font-size:18px">Mistral</text>
@@ -227,9 +233,8 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   </div>
 </section>
 
-<!-- 6 -->
-<section class="slide" data-t="1:30 – 4:00" hidden>
-  <header><div class="eyebrow">Données</div><h2>Partitions figées, zéro fuite</h2></header>
+<section class="slide" data-t="5:55 – 6:50" hidden>
+  <header><div class="eyebrow">Données</div><h2>Séparer les données avant de comparer</h2></header>
   <div class="body">
     <svg class="viz" id="ch-split" viewBox="0 0 1156 480" role="img" aria-label="Partitions train, validation et test pour la QA et le triage ; langues à parts égales ; aucune fuite ; audit Presidio">
       <rect class="box" x="0" y="244" width="364" height="226" rx="14"/>
@@ -238,7 +243,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
       <text class="n on" x="102" y="350" text-anchor="middle" style="font-size:32px">FR</text><text class="n on" x="262" y="350" text-anchor="middle" style="font-size:32px">EN</text>
       <text class="n" x="24" y="436" style="font-size:38px">50 % · 50 %</text>
       <rect class="box" x="396" y="244" width="364" height="226" rx="14"/>
-      <text class="k" x="420" y="280">FUITE ENTRE PARTITIONS</text><use href="#i-check" class="ic good" x="702" y="258" width="36" height="36"/>
+      <text class="k" x="420" y="280">DOUBLONS DÉTECTÉS APRÈS AUDIT</text><use href="#i-check" class="ic good" x="702" y="258" width="36" height="36"/>
       <text class="n" x="420" y="412" style="font-size:120px">0</text>
       <text class="b" x="512" y="372">FR et EN d'un cas</text><text class="s" x="512" y="398">dans la même partition</text>
       <rect class="box" x="792" y="244" width="364" height="226" rx="14"/>
@@ -249,8 +254,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   </div>
 </section>
 
-<!-- 7 -->
-<section class="slide" data-t="4:00 – 6:00" hidden>
+<section class="slide" data-t="6:50 – 7:50" hidden>
   <header><div class="eyebrow">Fine-tuning · SFT</div><h2>Deux démarches de SFT</h2></header>
   <div class="body">
     <svg class="viz" id="ch-sft2" viewBox="0 0 1156 490" role="img" aria-label="Démarche A : QA puis triage sur le même LoRA, la QA est oubliée. Démarche B retenue : QA et triage mélangés dans un seul entraînement.">
@@ -284,80 +288,22 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   </div>
 </section>
 
-<!-- 8 -->
-<section class="slide" data-t="4:00 – 6:00" hidden>
-  <header><div class="eyebrow">Fine-tuning · SFT</div><h2>Le mixte garde la QA et tient le triage</h2></header>
+<section class="slide" data-t="7:50 – 8:55" hidden>
+  <header><div class="eyebrow">Fine-tuning · SFT</div><h2>Le mixte : un compromis, pas un gain partout</h2></header>
   <div class="body">
     <div class="legend"><span><i style="background:var(--m-succ)"></i>SFT successif</span><span><i style="background:var(--m-mix)"></i>SFT mixte, époque 3</span><span>Validation : 238 triages, 262 QA</span></div>
     <svg class="viz" id="ch-sft" viewBox="0 0 1156 450" role="img" aria-label="SFT successif contre SFT mixte sur cinq métriques de validation"></svg>
   </div>
 </section>
 
-<!-- 9 -->
-<section class="slide" data-t="4:00 – 6:00" hidden>
-  <header><div class="eyebrow">Fine-tuning · SFT</div><h2>Plus d'époques, pas mieux</h2></header>
+<section class="slide" data-t="8:55 – 9:55" hidden>
+  <header><div class="eyebrow">Fine-tuning · DPO</div><h2 style="font-size:36px">DPO ciblé : moins de sur-triage, mais plus d’urgences manquées</h2></header>
   <div class="body">
-    <svg class="viz" id="ch-epochs" viewBox="0 0 1156 480" role="img" aria-label="Rappel des urgences, macro-F1 et QCM de l'époque 3 à l'époque 10 du SFT mixte"></svg>
+    <svg class="viz" id="ch-dpo" viewBox="0 0 1156 470" role="img" aria-label="Du SFT mixte au DPO 16 puis 32 pas : urgences retrouvées 91, 87, 83 ; macro-F1 en baisse ; sur-triage en baisse. Version DPO non retenue : le gain sur le sur-triage ne compense pas la perte de rappel urgent."></svg>
   </div>
 </section>
 
-<!-- 10 -->
-<section class="slide" data-t="6:00 – 8:00" hidden>
-  <header><div class="eyebrow">Fine-tuning · DPO</div><h2>DPO : deux essais pour corriger les ESI 2</h2></header>
-  <div class="body">
-    <svg class="viz" viewBox="0 0 1156 496" role="img" aria-label="Essai 1 : préférences médicales générales, aucun gain. Essai 2 : paires construites à partir des erreurs du modèle.">
-      <rect class="box" x="0" y="0" width="1156" height="146" rx="14"/>
-      <text class="k" x="24" y="32">ESSAI 1 · PRÉFÉRENCES MÉDICALES GÉNÉRALES</text>
-      <rect class="soft" x="24" y="50" width="260" height="78" rx="10"/><use href="#i-db" class="ic" x="40" y="70" width="38" height="38"/><text class="b" x="92" y="84">UltraMedical</text><text class="s" x="92" y="110">256 paires</text>
-      <path class="ln" d="M290 89H330" marker-end="url(#ah)"/>
-      <rect class="soft" x="340" y="50" width="170" height="78" rx="10"/><text class="b" x="425" y="84" text-anchor="middle">DPO</text><text class="s" x="425" y="110" text-anchor="middle">32 pas</text>
-      <path class="ln" d="M516 89H556" marker-end="url(#ah)"/>
-      <text class="k" x="576" y="68">SOUS-TRIAGES CRITIQUES</text>
-      <text class="n" x="576" y="118" style="font-size:44px">5</text><path class="ln" d="M612 104H648" marker-end="url(#ah)"/><text class="n" x="662" y="118" style="font-size:44px">5</text>
-      <text class="s" x="716" y="112">aucun gain de triage</text>
-
-      <rect class="box" x="0" y="166" width="1156" height="226" rx="14"/>
-      <text class="k" x="24" y="198">ESSAI 2 · PRÉFÉRENCES CONSTRUITES SUR LES ERREURS DU MODÈLE</text>
-      <rect class="soft" x="24" y="250" width="240" height="78" rx="10"/><use href="#i-cpu" class="ic" x="40" y="270" width="38" height="38"/><text class="b" x="92" y="284">SFT mixte</text><text class="s" x="92" y="310">prédit 1 888 cas</text>
-      <path class="ln" d="M270 289H306" marker-end="url(#ah)"/>
-      <rect class="tgood" x="316" y="218" width="330" height="66" rx="10"/><use href="#i-check" class="ic good" x="330" y="235" width="32" height="32"/><text class="b" x="374" y="248">Référence · ESI 2</text><text class="k" x="374" y="270">PRÉFÉRÉE</text>
-      <rect class="tbad" x="316" y="296" width="330" height="66" rx="10"/><use href="#i-cross" class="ic bad" x="330" y="313" width="32" height="32"/><text class="b" x="374" y="326">Sortie du modèle · ESI 3</text><text class="k" x="374" y="348">REJETÉE</text>
-      <path class="ln" d="M652 289H688" marker-end="url(#ah)"/>
-      <rect class="soft" x="698" y="250" width="190" height="78" rx="10"/><text class="b" x="793" y="284" text-anchor="middle">DPO</text><text class="s" x="793" y="310" text-anchor="middle">355 paires · 32 pas</text>
-      <path class="ln" d="M894 289H930" marker-end="url(#ah)"/>
-      <rect class="hl" x="940" y="250" width="192" height="78" rx="10"/><text class="b" x="1036" y="284" text-anchor="middle">Validation</text><text class="s" x="1036" y="310" text-anchor="middle">238 cas jamais vus</text>
-
-      <text class="k" x="0" y="426">CRITÈRE FIXÉ AVANT LE CALCUL</text>
-      <rect class="box" x="0" y="440" width="369" height="54" rx="27"/><use href="#i-check" class="ic a" x="16" y="454" width="26" height="26"/><text class="b" x="54" y="474" style="font-size:18px">Urgences retrouvées : en hausse</text>
-      <rect class="box" x="393" y="440" width="369" height="54" rx="27"/><use href="#i-check" class="ic a" x="409" y="454" width="26" height="26"/><text class="b" x="447" y="474" style="font-size:18px">Macro-F1 : −1 point au plus</text>
-      <rect class="box" x="787" y="440" width="369" height="54" rx="27"/><use href="#i-check" class="ic a" x="803" y="454" width="26" height="26"/><text class="b" x="841" y="474" style="font-size:18px">Sur-triage : +2 points au plus</text>
-    </svg>
-  </div>
-</section>
-
-<!-- 11 -->
-<section class="slide" data-t="6:00 – 8:00" hidden>
-  <header><div class="eyebrow">Fine-tuning · DPO</div><h2>DPO ciblé : plus d'urgences manquées, refusé</h2></header>
-  <div class="body">
-    <svg class="viz" id="ch-dpo" viewBox="0 0 1156 470" role="img" aria-label="Du SFT mixte au DPO 16 puis 32 pas : urgences retrouvées 91, 87, 83 ; macro-F1 en baisse ; sur-triage en baisse. Les 355 paires sont à 66 % des sur-triages."></svg>
-  </div>
-</section>
-
-<!-- 12 -->
-<section class="slide" data-t="8:00 – 9:00" hidden>
-  <header><div class="eyebrow">Validation</div><h2>Test final, ouvert une seule fois</h2></header>
-  <div class="body">
-    <div class="legend"><span><i style="background:var(--m-socle)"></i>Socle seul</span><span><i style="background:var(--m-succ)"></i>SFT successif</span><span>Test : 226 triages</span></div>
-    <svg class="viz" id="ch-test" viewBox="0 0 1156 440" role="img" aria-label="Test final : socle contre SFT successif sur quatre métriques ; 52 tests Pytest, 28 runs MLflow, test ouvert une fois">
-      <rect class="box" x="916" y="0" width="240" height="132" rx="14"/><text class="n" x="940" y="78" style="font-size:60px">52</text><text class="s" x="940" y="110">tests Pytest</text>
-      <rect class="box" x="916" y="152" width="240" height="132" rx="14"/><text class="n" x="940" y="230" style="font-size:60px">28</text><text class="s" x="940" y="262">runs MLflow</text>
-      <rect class="box" x="916" y="304" width="240" height="132" rx="14"/><text class="n" x="940" y="382" style="font-size:60px">1</text><use href="#i-lock" class="ic m" x="1090" y="322" width="40" height="40"/><text class="s" x="940" y="414">ouverture du test</text>
-    </svg>
-  </div>
-</section>
-
-<!-- 13 -->
-<section class="slide" data-t="8:00 – 9:00" hidden>
+<section class="slide" data-t="9:55 – 10:55" hidden>
   <header><div class="eyebrow">Validation</div><h2>Une sortie bien formée peut rester fausse</h2></header>
   <div class="body">
     <svg class="viz" id="ch-risk" viewBox="0 0 1156 484" role="img" aria-label="Trois risques : 9 urgences sur 100 classées ESI 3 ; une hypotension citée pour une tension à 150/90 ; des étiquettes produites par trois modèles sans relecture clinique">
@@ -391,11 +337,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   </div>
 </section>
 
-<!-- 14 -->
-<section class="slide" data-t="9:00 – 11:00" hidden>
-  <header><div class="eyebrow">Architecture</div><h2>Entraîner, livrer, servir</h2></header>
+<section class="slide" data-t="10:55 – 11:45" hidden>
+  <header><div class="eyebrow">Architecture</div><h2>Du modèle au service utilisable</h2></header>
   <div class="body">
-    <svg class="viz" viewBox="0 0 1156 500" role="img" aria-label="Architecture : entraînement sur GPU Colab avec MLflow, livraison par Hugging Face Hub et GitHub Actions, service par un Space Gradio permanent et une API FastAPI vLLM à la demande">
+    <svg class="viz" viewBox="0 0 1156 500" role="img" aria-label="Architecture : entraînement sur GPU Colab avec MLflow, livraison par Hugging Face Hub et GitHub Actions, service par un Space Gradio sous quotas et une API FastAPI vLLM à la demande">
       <rect class="zone" x="0" y="0" width="340" height="500" rx="14"/><text class="k ka" x="20" y="30">ENTRAÎNEMENT</text>
       <rect class="zone" x="364" y="0" width="256" height="500" rx="14"/><text class="k ka" x="384" y="30">LIVRAISON</text>
       <rect class="zone" x="644" y="0" width="512" height="500" rx="14"/><text class="k ka" x="664" y="30">SERVICE</text>
@@ -403,7 +348,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
       <rect class="box" x="20" y="50" width="300" height="84" rx="10"/><use href="#i-db" class="ic a" x="36" y="74" width="36" height="36"/><text class="b" x="86" y="86">Corpus v3 JSONL</text><text class="s" x="86" y="112" style="font-size:15.5px">pandas · PyArrow · SHA256</text>
       <rect class="box" x="20" y="160" width="300" height="84" rx="10"/><use href="#i-cpu" class="ic a" x="36" y="184" width="36" height="36"/><text class="b" x="86" y="196">LoRA SFT et DPO</text><text class="s" x="86" y="222" style="font-size:15.5px">Transformers · PEFT · TRL</text>
       <rect class="box" x="20" y="270" width="300" height="84" rx="10"/><use href="#i-server" class="ic a" x="36" y="294" width="36" height="36"/><text class="b" x="86" y="306">GPU Colab</text><text class="s" x="86" y="332" style="font-size:15.5px">à la demande</text>
-      <rect class="box" x="20" y="380" width="300" height="84" rx="10"/><use href="#i-chart" class="ic a" x="36" y="404" width="36" height="36"/><text class="b" x="86" y="416">MLflow</text><text class="s" x="86" y="442" style="font-size:15.5px">paramètres, loss, évaluations</text>
+      <a href="http://127.0.0.1:5002" target="_blank" rel="noopener noreferrer" aria-label="Ouvrir MLflow local, tous les suivis, serveur à lancer avant la présentation"><title>MLflow local — démarrer le serveur avant la présentation</title><rect class="box" x="20" y="380" width="300" height="84" rx="10"/><use href="#i-chart" class="ic a" x="36" y="404" width="36" height="36"/><text class="b" x="86" y="416">MLflow ↗</text><text class="s" x="86" y="442" style="font-size:15.5px">Ouvrir tous les suivis locaux</text></a>
       <path class="ln" d="M170 136V154" marker-end="url(#ah)"/><path class="ln" d="M170 246V264" marker-end="url(#ah)"/><path class="ln" d="M170 356V374" marker-end="url(#ah)"/>
 
       <rect class="box" x="384" y="120" width="216" height="84" rx="10"/><text class="b" x="402" y="156">Hugging Face Hub</text><text class="s" x="402" y="182" style="font-size:15.5px">dataset + adaptateurs</text>
@@ -411,7 +356,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
       <path class="ln" d="M322 202H352V162H376" marker-end="url(#ah)"/><path class="ln" d="M492 206V270" marker-end="url(#ah)"/>
 
       <rect class="box" x="664" y="50" width="472" height="64" rx="10"/><use href="#i-person" class="ic a" x="680" y="66" width="32" height="32"/><text class="b" x="726" y="89">Soignant · questionnaire FR / EN</text>
-      <text class="k" x="664" y="150">DÉMONSTRATION · PERMANENTE</text>
+      <text class="k" x="664" y="150">DÉMONSTRATION · PUBLIQUE, SOUS QUOTAS</text>
       <rect class="box" x="664" y="162" width="472" height="84" rx="10"/><text class="b" x="682" y="198">Gradio → Transformers + PEFT</text><text class="s" x="682" y="224" style="font-size:15.5px">HF Spaces ZeroGPU · trace JSON par session</text>
       <text class="k" x="664" y="282">API · À LA DEMANDE</text>
       <rect class="hl" x="664" y="294" width="472" height="84" rx="10"/><text class="b" x="682" y="330">FastAPI → vLLM + LoRA</text><text class="s" x="682" y="356" style="font-size:15.5px">clé Bearer · contrôle ESI/priorité · X-Request-ID</text>
@@ -423,102 +368,117 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   </div>
 </section>
 
-<!-- 15 -->
-<section class="slide" data-t="9:00 – 11:00" hidden>
-  <header><div class="eyebrow">Architecture</div><h2>Le parcours d'une requête</h2></header>
-  <div class="body">
-    <svg class="viz" viewBox="0 0 1156 470" role="img" aria-label="Saisie, question complémentaire, inférence, contrôle de la sortie, proposition, décision du soignant ; une sortie invalide part en revue humaine ; tout est journalisé">
-      <g text-anchor="middle">
-        <text class="k ka" x="96" y="26">1</text><text class="k ka" x="289" y="26">2</text><text class="k ka" x="482" y="26">3</text><text class="k ka" x="675" y="26">4</text><text class="k ka" x="868" y="26">5</text><text class="k ka" x="1061" y="26">6</text>
-        <circle class="soft" cx="96" cy="94" r="50"/><circle class="soft" cx="289" cy="94" r="50"/><circle class="soft" cx="482" cy="94" r="50"/><circle class="soft" cx="675" cy="94" r="50"/><circle class="soft" cx="868" cy="94" r="50"/><circle class="hl" cx="1061" cy="94" r="50"/>
-        <text class="b" x="96" y="180" style="font-size:22px">Saisie</text><text class="s" x="96" y="206">champs manquants</text>
-        <text class="b" x="289" y="180" style="font-size:22px">Question</text><text class="s" x="289" y="206">script, pas le modèle</text>
-        <text class="b" x="482" y="180" style="font-size:22px">Inférence</text><text class="s" x="482" y="206">adaptateur vérifié</text>
-        <text class="b" x="675" y="180" style="font-size:22px">Contrôle</text><text class="s" x="675" y="206">ESI et priorité</text>
-        <text class="b" x="868" y="180" style="font-size:22px">Proposition</text><text class="s" x="868" y="206">à valider</text>
-        <text class="b" x="1061" y="180" style="font-size:22px">Soignant</text><text class="s" x="1061" y="206">décide</text>
-        <text class="n" x="868" y="103" style="font-size:22px">ESI 2</text>
-      </g>
-      <use href="#i-form" class="ic" x="73" y="71" width="46" height="46"/><use href="#i-chat" class="ic" x="266" y="71" width="46" height="46"/><use href="#i-cpu" class="ic" x="459" y="71" width="46" height="46"/><use href="#i-check" class="ic" x="652" y="71" width="46" height="46"/><use href="#i-person" class="ic a" x="1038" y="71" width="46" height="46"/>
-      <path class="ln" d="M154 94H231" marker-end="url(#ah)"/><path class="ln" d="M347 94H424" marker-end="url(#ah)"/><path class="ln" d="M540 94H617" marker-end="url(#ah)"/><path class="ln" d="M733 94H810" marker-end="url(#ah)"/><path class="ln" d="M926 94H1003" marker-end="url(#ah)"/>
-      <path d="M675 222V276" fill="none" stroke="var(--bad)" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#ahb)"/>
-      <rect class="tbad" x="520" y="286" width="310" height="76" rx="10"/><use href="#i-warn" class="ic bad" x="538" y="307" width="34" height="34"/><text class="b" x="586" y="318">Revue humaine</text><text class="s" x="586" y="344" style="font-size:16px">sortie invalide · aucune priorité</text>
-      <rect class="hl" x="0" y="396" width="1156" height="66" rx="12"/><use href="#i-doc" class="ic a" x="22" y="412" width="34" height="34"/><text class="b" x="72" y="437">Journal d'audit</text><text class="s" x="252" y="437">écrit avant la réponse · X-Request-ID · clé Bearer · entrées filtrées</text>
-    </svg>
-  </div>
-</section>
-
-<!-- 16 -->
-<section class="slide cover" data-t="11:00 – 13:00" hidden>
-  <div class="eyebrow">Démonstration</div>
-  <h1>Démonstration</h1>
-  <svg class="viz" viewBox="0 0 1156 150" role="img" aria-label="Cas fictif, question complémentaire, proposition, trace JSON, suivi MLflow" style="max-width:1000px">
-    <g text-anchor="middle">
-      <circle class="soft" cx="60" cy="52" r="44"/><circle class="soft" cx="319" cy="52" r="44"/><circle class="hl" cx="578" cy="52" r="44"/><circle class="soft" cx="837" cy="52" r="44"/><circle class="soft" cx="1096" cy="52" r="44"/>
-      <text class="b" x="60" y="130">Cas fictif</text><text class="b" x="319" y="130">Question</text><text class="b" x="578" y="130">Proposition</text><text class="b" x="837" y="130">Trace JSON</text><text class="b" x="1096" y="130">MLflow</text>
-      <text class="n" x="578" y="60" style="font-size:20px">ESI</text>
-    </g>
-    <use href="#i-form" class="ic" x="40" y="32" width="40" height="40"/><use href="#i-chat" class="ic" x="299" y="32" width="40" height="40"/><use href="#i-doc" class="ic" x="817" y="32" width="40" height="40"/><use href="#i-chart" class="ic" x="1076" y="32" width="40" height="40"/>
-    <path class="ln" d="M112 52H267" marker-end="url(#ah)"/><path class="ln" d="M371 52H526" marker-end="url(#ah)"/><path class="ln" d="M630 52H785" marker-end="url(#ah)"/><path class="ln" d="M889 52H1044" marker-end="url(#ah)"/>
-  </svg>
-  <a class="url" href="https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en" target="_blank" rel="noopener">huggingface.co/spaces/rayakevin/ocr14-triage-fr-en</a>
-</section>
-
-<!-- 17 -->
-<section class="slide" data-t="13:00 – 14:00" hidden>
-  <header><div class="eyebrow">Infrastructure</div><h2>Huit requêtes servies en 1,5 seconde</h2></header>
+<section class="slide" data-t="11:45 – 12:30" hidden>
+  <header><div class="eyebrow">Infrastructure</div><h2>Le service répond ; la charge reste à tester</h2></header>
   <div class="body">
     <svg class="viz" id="ch-perf" viewBox="0 0 1156 490" role="img" aria-label="Latence : vLLM sur L4 1,23 s pour une requête et 1,54 s pour huit simultanées ; Space ZeroGPU 3,9 à 5,1 s. Coût : 16 minutes de GPU pour le SFT mixte, 1 h 21 au total, moins de 4 Go de VRAM, environ 0,80 dollar de l'heure.">
       <rect class="box" x="0" y="330" width="271" height="152" rx="14"/><text class="n" x="22" y="402" style="font-size:46px">16 min</text><text class="s" x="22" y="436">de GPU pour le SFT mixte</text>
       <rect class="box" x="295" y="330" width="271" height="152" rx="14"/><text class="n" x="317" y="402" style="font-size:46px">1 h 21</text><text class="s" x="317" y="436">de GPU, cinq calculs</text>
       <rect class="box" x="590" y="330" width="271" height="152" rx="14"/><text class="n" x="612" y="402" style="font-size:46px">&lt; 4 Go</text><text class="s" x="612" y="436">de VRAM occupée</text>
-      <rect class="box" x="885" y="330" width="271" height="152" rx="14"/><text class="n" x="907" y="402" style="font-size:46px">≈ 0,80 $/h</text><text class="s" x="907" y="436">GPU L4 dédié, tarif public</text>
+      <rect class="box" x="885" y="330" width="271" height="152" rx="14"/><text class="n" x="907" y="402" style="font-size:46px">≈ 0,80 $/h</text><text class="s" x="907" y="436">L4 · estimation nov. 2026</text>
     </svg>
   </div>
 </section>
 
-<!-- 18 -->
-<section class="slide" data-t="14:00 – 15:00" hidden>
-  <header><div class="eyebrow">Perspectives</div><h2>Passer à l'échelle : la route et les verrous</h2></header>
+<section class="slide" data-t="12:30 – 13:35" hidden>
+<header><div class="eyebrow">Perspectives</div><h2>Trois priorités avant un usage clinique</h2></header>
+<div class="body"><svg class="viz" viewBox="0 0 1156 470" role="img" aria-label="Trois priorités : références relues par des soignants, évaluation indépendante du modèle, service sécurisé et testé sous charge">
+<path class="ln" d="M190 138H966"/>
+<circle class="hl" cx="190" cy="138" r="64"/><use href="#i-people" class="ic a" x="160" y="108" width="60" height="60"/>
+<g text-anchor="middle"><text class="k ka" x="190" y="40">1</text><text class="n" x="190" y="258" style="font-size:27px">Références cliniques</text><text class="s" x="190" y="306">Relire les cas</text><text class="s" x="190" y="335">avec des soignants</text></g><circle class="hl" cx="578" cy="138" r="64"/><use href="#i-check" class="ic a" x="548" y="108" width="60" height="60"/>
+<g text-anchor="middle"><text class="k ka" x="578" y="40">2</text><text class="n" x="578" y="258" style="font-size:27px">Évaluation indépendante</text><text class="s" x="578" y="306">Tester le modèle retenu</text><text class="s" x="578" y="335">sur de nouveaux cas</text></g><circle class="hl" cx="966" cy="138" r="64"/><use href="#i-server" class="ic a" x="936" y="108" width="60" height="60"/>
+<g text-anchor="middle"><text class="k ka" x="966" y="40">3</text><text class="n" x="966" y="258" style="font-size:27px">Service fiable</text><text class="s" x="966" y="306">Sécuriser et superviser</text><text class="s" x="966" y="335">tester sous charge</text></g></svg></div></section>
+
+<section class="slide cover" data-t="13:35 – 14:00" hidden>
+<div class="eyebrow">Conclusion</div>
+<h2 style="font-size:58px;max-width:24ch">Faisable techniquement,<br>à valider cliniquement</h2>
+<svg class="viz" viewBox="0 0 1156 190" role="img" aria-label="Faisabilité technique démontrée dans le POC ; évaluation avec des soignants à réaliser avant usage clinique">
+<rect class="hl" x="0" y="20" width="495" height="145" rx="14"/><use href="#i-check" class="ic a" x="28" y="62" width="52" height="52"/>
+<text class="b" x="106" y="82" style="font-size:27px">POC fonctionnel</text><text class="s" x="106" y="119">Faisabilité technique démontrée</text>
+<path class="ln dash" d="M515 92H622" marker-end="url(#ah)"/>
+<rect class="box" x="650" y="20" width="506" height="145" rx="14"/><use href="#i-people" class="ic" x="678" y="62" width="52" height="52"/>
+<text class="b" x="756" y="82" style="font-size:27px">Prochaine étape</text><text class="s" x="756" y="119">Évaluer avec des soignants</text>
+</svg><div class="who">Merci · place à vos questions</div></section>
+
+<section class="slide" data-annexe="true" data-t="Discussion · annexe 1" hidden>
+  <header><div class="eyebrow">Annexe 1 · Données</div><h2>Quatre sources, aucun niveau ESI</h2></header>
   <div class="body">
-    <svg class="viz" viewBox="0 0 1156 490" role="img" aria-label="Feuille de route en cinq étapes et quatre conditions go / no-go : sécurité et fidélité non atteintes, service partiel, données à faire">
-      <path class="ln" d="M116 86H1040"/>
+    <svg class="viz" viewBox="0 0 1156 480" role="img" aria-label="Contenu des quatre sources : langue, questions-réponses, préférences, cas cliniques ; aucune ne fournit de niveau ESI">
+      <rect x="990" y="6" width="160" height="468" rx="14" fill="var(--bad)" fill-opacity=".07" stroke="var(--bad)" stroke-width="1.5" stroke-dasharray="6 6"/>
+      <g text-anchor="middle"><text class="k" x="400" y="40">LANGUE</text><text class="k" x="550" y="40">QUESTIONS-RÉPONSES</text><text class="k" x="740" y="40">PRÉFÉRENCES</text><text class="k" x="890" y="40">CAS CLINIQUES</text><text class="k" x="1070" y="40">NIVEAU ESI</text></g>
+      <path class="axis" d="M0 168H966M0 268H966M0 368H966"/>
+      <text class="b" x="0" y="112" style="font-size:24px">MediQAl</text><text class="s" x="0" y="138">CC BY 4.0</text>
+      <text class="b" x="0" y="212" style="font-size:24px">UltraMedical-Preference</text><text class="s" x="0" y="238">MIT</text>
+      <text class="b" x="0" y="312" style="font-size:24px">MedQuAD</text><text class="s" x="0" y="338">licence non renseignée</text>
+      <text class="b" x="0" y="412" style="font-size:24px">FrenchMedMCQA</text><text class="s" x="0" y="438">licence non renseignée</text>
       <g text-anchor="middle">
-        <text class="k ka" x="116" y="22">1</text><text class="k ka" x="347" y="22">2</text><text class="k ka" x="578" y="22">3</text><text class="k ka" x="809" y="22">4</text><text class="k ka" x="1040" y="22">5</text>
-        <circle class="hl" cx="116" cy="86" r="44"/><circle class="hl" cx="347" cy="86" r="44"/><circle class="hl" cx="578" cy="86" r="44"/><circle class="hl" cx="809" cy="86" r="44"/><circle class="hl" cx="1040" cy="86" r="44"/>
-        <text class="b" x="116" y="166">Référence clinique</text><text class="s" x="116" y="191" style="font-size:16px">relue par des soignants</text>
-        <text class="b" x="347" y="166">DPO rééquilibré</text><text class="s" x="347" y="191" style="font-size:16px">puis socle plus grand</text>
-        <text class="b" x="578" y="166">Endpoint vLLM dédié</text><text class="s" x="578" y="191" style="font-size:16px">supervision, tests de charge</text>
-        <text class="b" x="809" y="166">Hébergement HDS</text><text class="s" x="809" y="191" style="font-size:16px">journal chiffré</text>
-        <text class="b" x="1040" y="166">Connecteur SIH</text><text class="s" x="1040" y="191" style="font-size:16px">FHIR, pilote avec l'IOA</text>
+        <rect class="soft" x="366" y="100" width="68" height="38" rx="19"/><text class="v" x="400" y="125">FR</text>
+        <rect class="soft" x="366" y="200" width="68" height="38" rx="19"/><text class="v" x="400" y="225">EN</text>
+        <rect class="soft" x="366" y="300" width="68" height="38" rx="19"/><text class="v" x="400" y="325">EN</text>
+        <rect class="soft" x="366" y="400" width="68" height="38" rx="19"/><text class="v" x="400" y="425">FR</text>
       </g>
-      <use href="#i-people" class="ic a" x="94" y="64" width="44" height="44"/><use href="#i-balance" class="ic a" x="325" y="64" width="44" height="44"/><use href="#i-server" class="ic a" x="556" y="64" width="44" height="44"/><use href="#i-lock" class="ic a" x="787" y="64" width="44" height="44"/><use href="#i-hosp" class="ic a" x="1018" y="64" width="44" height="44"/>
-
-      <text class="k" x="0" y="262">CONDITIONS GO / NO-GO</text>
-      <rect class="box" x="0" y="278" width="271" height="204" rx="14"/><use href="#i-cross" class="ic bad" x="20" y="298" width="30" height="30"/><text class="b" x="60" y="320" style="font-size:17px">non atteint</text><text class="n" x="20" y="388" style="font-size:30px">Sécurité</text><text class="s" x="20" y="424" style="font-size:16px">aucun ESI 1 manqué,</text><text class="s" x="20" y="446" style="font-size:16px">seuil ESI 2 fixé par les urgentistes</text>
-      <rect class="box" x="295" y="278" width="271" height="204" rx="14"/><use href="#i-cross" class="ic bad" x="315" y="298" width="30" height="30"/><text class="b" x="355" y="320" style="font-size:17px">non atteint</text><text class="n" x="315" y="388" style="font-size:30px">Fidélité</text><text class="s" x="315" y="424" style="font-size:16px">justification sans</text><text class="s" x="315" y="446" style="font-size:16px">élément inventé</text>
-      <rect class="box" x="590" y="278" width="271" height="204" rx="14"/><use href="#i-warn" class="ic warn" x="610" y="298" width="30" height="30"/><text class="b" x="650" y="320" style="font-size:17px">partiel</text><text class="n" x="610" y="388" style="font-size:30px">Service</text><text class="s" x="610" y="424" style="font-size:16px">latence et débit</text><text class="s" x="610" y="446" style="font-size:16px">sous charge</text>
-      <rect class="box" x="885" y="278" width="271" height="204" rx="14"/><use href="#i-clock" class="ic m" x="905" y="298" width="30" height="30"/><text class="b" x="945" y="320" style="font-size:17px">à faire</text><text class="n" x="905" y="388" style="font-size:30px">Données</text><text class="s" x="905" y="424" style="font-size:16px">HDS, journal chiffré,</text><text class="s" x="905" y="446" style="font-size:16px">analyse d'impact</text>
+      <g fill="var(--accent)">
+        <circle cx="550" cy="119" r="15"/><circle cx="890" cy="119" r="15"/>
+        <circle cx="740" cy="219" r="15"/><circle cx="890" cy="219" r="15"/>
+        <circle cx="550" cy="319" r="15"/>
+      </g>
+      <circle cx="550" cy="419" r="14" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="5 4"/><text class="s" x="574" y="425">exploration</text>
+      <g fill="var(--line)"><circle cx="740" cy="119" r="4"/><circle cx="550" cy="219" r="4"/><circle cx="740" cy="319" r="4"/><circle cx="890" cy="319" r="4"/><circle cx="740" cy="419" r="4"/><circle cx="890" cy="419" r="4"/></g>
+      <use href="#i-cross" class="ic bad" x="1050" y="99" width="40" height="40"/><use href="#i-cross" class="ic bad" x="1050" y="199" width="40" height="40"/><use href="#i-cross" class="ic bad" x="1050" y="299" width="40" height="40"/><use href="#i-cross" class="ic bad" x="1050" y="399" width="40" height="40"/>
     </svg>
   </div>
 </section>
 
-<!-- 19 -->
-<section class="slide cover" data-t="14:00 – 15:00" hidden>
-  <div class="eyebrow">Conclusion</div>
-  <h2 style="font-size:58px;max-width:20ch">Faisable techniquement, à valider cliniquement</h2>
-  <svg class="viz" viewBox="0 0 1156 170" role="img" aria-label="Données, entraînement, API vLLM, traçabilité et CI/CD sont en place ; la validation clinique est la prochaine étape">
-    <path class="ln" d="M96 52H868"/><path class="ln dash" d="M868 52H1017"/>
-    <g text-anchor="middle">
-      <circle class="hl" cx="96" cy="52" r="40"/><circle class="hl" cx="289" cy="52" r="40"/><circle class="hl" cx="482" cy="52" r="40"/><circle class="hl" cx="675" cy="52" r="40"/><circle class="hl" cx="868" cy="52" r="40"/>
-      <circle cx="1061" cy="52" r="44" fill="var(--paper)" stroke="var(--ink)" stroke-width="2.5" stroke-dasharray="7 6"/>
-      <text class="b" x="96" y="128">Données</text><text class="b" x="289" y="128">Entraînement</text><text class="b" x="482" y="128">API vLLM</text><text class="b" x="675" y="128">Traçabilité</text><text class="b" x="868" y="128">CI/CD</text>
-      <text class="b" x="1061" y="128">Validation clinique</text><text class="s" x="1061" y="154">prochaine étape</text>
-    </g>
-    <use href="#i-check" class="ic a" x="74" y="30" width="44" height="44"/><use href="#i-check" class="ic a" x="267" y="30" width="44" height="44"/><use href="#i-check" class="ic a" x="460" y="30" width="44" height="44"/><use href="#i-check" class="ic a" x="653" y="30" width="44" height="44"/><use href="#i-check" class="ic a" x="846" y="30" width="44" height="44"/>
-    <use href="#i-people" class="ic" x="1039" y="30" width="44" height="44"/>
-  </svg>
-  <div class="who">Merci · place à vos questions</div>
+<section class="slide" data-annexe="true" data-t="Discussion · annexe 2" hidden>
+  <header><div class="eyebrow">Annexe 2 · Fine-tuning · SFT</div><h2>Plus d'époques, pas mieux</h2></header>
+  <div class="body">
+    <svg class="viz" id="ch-epochs" viewBox="0 0 1156 480" role="img" aria-label="Rappel des urgences, macro-F1 et QCM des époques 1 à 10 du SFT mixte ; reprise après l’époque 3 avec optimiseur réinitialisé et nouveau calendrier d’apprentissage"></svg>
+  </div>
+</section>
+
+<section class="slide" data-annexe="true" data-t="Discussion · annexe 3" hidden>
+  <header><div class="eyebrow">Annexe 3 · Fine-tuning · DPO</div><h2>DPO : du général aux erreurs de triage</h2></header>
+  <div class="body">
+    <svg class="viz" viewBox="0 0 1156 496" role="img" aria-label="Essai 1 : préférences médicales générales, aucun gain. Essai 2 : paires construites à partir des erreurs du modèle.">
+      <rect class="box" x="0" y="0" width="1156" height="146" rx="14"/>
+      <text class="k" x="24" y="32">ESSAI 1 · PRÉFÉRENCES MÉDICALES GÉNÉRALES</text>
+      <rect class="soft" x="24" y="50" width="260" height="78" rx="10"/><use href="#i-db" class="ic" x="40" y="70" width="38" height="38"/><text class="b" x="92" y="84">UltraMedical</text><text class="s" x="92" y="110">256 paires</text>
+      <path class="ln" d="M290 89H330" marker-end="url(#ah)"/>
+      <rect class="soft" x="340" y="50" width="170" height="78" rx="10"/><text class="b" x="425" y="84" text-anchor="middle">DPO</text><text class="s" x="425" y="110" text-anchor="middle">32 pas</text>
+      <path class="ln" d="M516 89H556" marker-end="url(#ah)"/>
+      <text class="k" x="576" y="68">SOUS-TRIAGES CRITIQUES</text>
+      <text class="n" x="576" y="118" style="font-size:44px">5</text><path class="ln" d="M612 104H648" marker-end="url(#ah)"/><text class="n" x="662" y="118" style="font-size:44px">5</text>
+      <text class="s" x="716" y="112">aucun gain de triage</text>
+
+      <rect class="box" x="0" y="166" width="1156" height="226" rx="14"/>
+      <text class="k" x="24" y="198">ESSAI 2 · PRÉFÉRENCES CONSTRUITES SUR LES ERREURS DU MODÈLE</text>
+      <rect class="soft" x="24" y="250" width="240" height="78" rx="10"/><use href="#i-cpu" class="ic" x="40" y="270" width="38" height="38"/><text class="b" x="92" y="284">SFT mixte</text><text class="s" x="92" y="310">prédit 1 888 cas</text>
+      <path class="ln" d="M270 289H306" marker-end="url(#ah)"/>
+      <rect class="tgood" x="316" y="218" width="330" height="66" rx="10"/><use href="#i-check" class="ic good" x="330" y="235" width="32" height="32"/><text class="b" x="374" y="248">Référence · ESI 2</text><text class="k" x="374" y="270">PRÉFÉRÉE</text>
+      <rect class="tbad" x="316" y="296" width="330" height="66" rx="10"/><use href="#i-cross" class="ic bad" x="330" y="313" width="32" height="32"/><text class="b" x="374" y="326">Sortie du modèle · ESI 3</text><text class="k" x="374" y="348">REJETÉE</text>
+      <path class="ln" d="M652 289H688" marker-end="url(#ah)"/>
+      <rect class="soft" x="698" y="250" width="190" height="78" rx="10"/><text class="b" x="793" y="284" text-anchor="middle">DPO</text><text class="s" x="793" y="310" text-anchor="middle">355 paires · 32 pas</text>
+      <path class="ln" d="M894 289H930" marker-end="url(#ah)"/>
+      <rect class="hl" x="940" y="250" width="192" height="78" rx="10"/><text class="b" x="1036" y="284" text-anchor="middle">Validation</text><text class="s" x="1036" y="310" text-anchor="middle">hors entraînement</text>
+
+      <text class="k" x="0" y="426">CRITÈRE FIXÉ AVANT LE CALCUL</text>
+      <rect class="box" x="0" y="440" width="369" height="54" rx="27"/><use href="#i-check" class="ic a" x="16" y="454" width="26" height="26"/><text class="b" x="54" y="474" style="font-size:18px">Urgences retrouvées : en hausse</text>
+      <rect class="box" x="393" y="440" width="369" height="54" rx="27"/><use href="#i-check" class="ic a" x="409" y="454" width="26" height="26"/><text class="b" x="447" y="474" style="font-size:18px">Macro-F1 : −1 point au plus</text>
+      <rect class="box" x="787" y="440" width="369" height="54" rx="27"/><use href="#i-check" class="ic a" x="803" y="454" width="26" height="26"/><text class="b" x="841" y="474" style="font-size:18px">Sur-triage : +2 points au plus</text>
+    </svg>
+  </div>
+</section>
+
+<section class="slide" data-annexe="true" data-t="Discussion · annexe 4" hidden>
+  <header><div class="eyebrow">Annexe 4 · Validation</div><h2>Test indépendant : le SFT successif</h2></header>
+  <div class="body">
+    <div class="legend"><span><i style="background:var(--m-socle)"></i>Socle seul</span><span><i style="background:var(--m-succ)"></i>SFT successif</span><span>Test : 226 triages</span></div>
+    <svg class="viz" id="ch-test" viewBox="0 0 1156 440" role="img" aria-label="Test final : socle contre SFT successif sur quatre métriques ; 52 tests Pytest, 28 runs MLflow, test du SFT successif">
+      <rect class="box" x="916" y="0" width="240" height="132" rx="14"/><text class="n" x="940" y="78" style="font-size:60px">52</text><text class="s" x="940" y="110">tests Pytest</text>
+      <rect class="box" x="916" y="152" width="240" height="132" rx="14"/><text class="n" x="940" y="230" style="font-size:60px">28</text><text class="s" x="940" y="262">runs MLflow</text>
+      <rect class="box" x="916" y="304" width="240" height="132" rx="14"/><text class="n" x="940" y="382" style="font-size:60px">1</text><use href="#i-lock" class="ic m" x="1090" y="322" width="40" height="40"/><text class="s" x="940" y="414">modèle SFT évalué</text>
+    </svg>
+  </div>
 </section>
 
 </main>
@@ -529,7 +489,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   <button type="button" id="next" aria-label="Diapositive suivante">→</button>
   <span id="count">1 / 1</span>
   <div class="track" aria-hidden="true"><i id="prog"></i></div>
-  <span class="hint">← → pour naviguer · F plein écran</span>
+  <span class="hint">← → naviguer · A annexes · F plein écran</span>
   <span id="cue" title="Créneau prévu pour cette diapositive"></span>
   <button type="button" id="clock" title="Chronomètre : cliquer pour remettre à zéro" aria-label="Chronomètre, cliquer pour remettre à zéro">00:00</button>
   <button type="button" id="full" aria-label="Plein écran">⛶</button>
@@ -634,21 +594,25 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   /* 9 · Courbes par époque */
   (function(){
     var svg=$("ch-epochs");
-    var ep=[3,4,5,6,7,8,9,10],
-        S=[{n:"Urgences retrouvées",u:"sur 100",c:"var(--c-rap)",v:[91,82,86,92,90,90,89,89],lab:{0:[-16,6,"end"],1:[0,24,"middle"]}},
-           {n:"Macro-F1",u:"× 100",c:"var(--m-mix)",v:[78.74,77.92,80.50,77.11,78.24,76.89,77.40,77.40],lab:{0:[-16,6,"end"],2:[0,-16,"middle"]}},
-           {n:"QCM corrects",u:"en %",c:"var(--c-qa)",v:[57.25,54.96,56.49,55.73,54.96,52.67,53.44,53.44],lab:{0:[-16,6,"end"]}}];
-    var L=60,R=900,T=44,B=420,ymin=50,ymax=95,pad=84;
-    var X=function(e){return L+pad+(e-3)/7*(R-L-pad-20);},Y=function(v){return B-(v-ymin)/(ymax-ymin)*(B-T);};
+    var ep=[1,2,3,4,5,6,7,8,9,10],
+        S=[{n:"Urgences retrouvées",u:"sur 100",c:"var(--c-rap)",v:[76,85,91,82,86,92,90,90,89,89],lab:{0:[0,-16,"middle"],1:[0,-16,"middle"],2:[0,-16,"middle"]}},
+           {n:"Macro-F1",u:"× 100",c:"var(--m-mix)",v:[66.80,77.20,78.74,77.92,80.50,77.11,78.24,76.89,77.40,77.40],lab:{}},
+           {n:"QCM corrects",u:"en %",c:"var(--c-qa)",v:[53.44,58.02,57.25,54.96,56.49,55.73,54.96,52.67,53.44,53.44],lab:{}}];
+    var L=60,R=900,T=64,B=380,ymin=50,ymax=100,pad=30;
+    var X=function(e){return L+pad+(e-1)/9*(R-L-pad-20);},Y=function(v){return B-(v-ymin)/(ymax-ymin)*(B-T);};
     [50,60,70,80,90].forEach(function(t){svg.appendChild(el("line",{x1:L,x2:R,y1:Y(t),y2:Y(t),"class":"axis"}));svg.appendChild(el("text",{x:L-12,y:Y(t)+6,"text-anchor":"end","class":"s"},t));});
-    svg.appendChild(el("rect",{x:X(3)-70,y:T-8,width:96,height:B-T+16,rx:10,fill:"var(--accent)","fill-opacity":.1}));
-    svg.appendChild(el("text",{x:X(3)-22,y:T-18,"text-anchor":"middle","class":"k ka"},"ÉPOQUE RETENUE"));
+    svg.appendChild(el("rect",{x:X(3)-28,y:T-8,width:56,height:B-T+16,rx:10,fill:"var(--accent)","fill-opacity":.1}));
+    svg.appendChild(el("text",{x:X(3),y:T-28,"text-anchor":"middle","class":"k ka"},"ÉPOQUE RETENUE"));
+    var reprise=(X(3)+X(4))/2;
+    svg.appendChild(el("line",{x1:reprise,x2:reprise,y1:T,y2:B,stroke:"var(--muted)","stroke-dasharray":"5 5"}));
+    svg.appendChild(el("text",{x:(X(4)+X(10))/2,y:36,"text-anchor":"middle","class":"k"},"POURSUITE AVEC DE NOUVEAUX RÉGLAGES"));
+    svg.appendChild(el("text",{x:L,y:462,"class":"s","style":"font-size:16px"},"Poids de l’époque 3 conservés · pas d’apprentissage réduit · nouvel optimiseur."));
     ep.forEach(function(e){svg.appendChild(el("text",{x:X(e),y:B+34,"text-anchor":"middle","class":e===3?"b":"s"},"ép. "+e));});
     S.forEach(function(s){
       var d=s.v.map(function(v,i){return (i?"L":"M")+X(ep[i])+" "+Y(v);}).join(" ");
       svg.appendChild(el("path",{d:d,fill:"none",stroke:s.c,"stroke-width":3,"stroke-linejoin":"round"}));
       s.v.forEach(function(v,i){
-        svg.appendChild(tip(el("circle",{cx:X(ep[i]),cy:Y(v),r:i===0?8:5.5,fill:s.c,stroke:"var(--paper)","stroke-width":2}),s.n+" · époque "+ep[i]+" : "+fr(v,1)));
+        svg.appendChild(tip(el("circle",{cx:X(ep[i]),cy:Y(v),r:ep[i]===3?8:5.5,fill:s.c,stroke:"var(--paper)","stroke-width":2}),s.n+" · époque "+ep[i]+" : "+fr(v,1)));
         if(s.lab[i])svg.appendChild(el("text",{x:X(ep[i])+s.lab[i][0],y:Y(v)+s.lab[i][1],"text-anchor":s.lab[i][2],"class":"v","style":i===0?"font-size:19px":""},fr(v,v%1?1:0)));
       });
       var ye=Y(s.v[s.v.length-1]);
@@ -676,16 +640,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
         svg.appendChild(el("text",{x:X(i),y:246,"text-anchor":"middle","class":"s","style":"font-size:16px"},cats[i]));
       });
     });
-    svg.appendChild(el("text",{x:0,y:322,"class":"k"},"355 PAIRES D'ENTRAÎNEMENT"));
-    var x=0,k=(1156-4)/355;
-    [{v:234,c:"var(--m-socle)",l:"234 sur-triages · 66 %"},{v:72,c:"var(--esi1)",l:"72 sous-triages critiques"},{v:49,c:"var(--esi2)",l:"49 autres"}].forEach(function(s){
-      var w=s.v*k;
-      svg.appendChild(tip(el("rect",{x:x,y:336,width:w,height:70,rx:6,fill:s.c}),s.l));
-      svg.appendChild(el("text",{x:x+w/2,y:378,"text-anchor":"middle","class":"b on","style":"font-size:19px"},s.l));
-      x+=w+2;
-    });
-    svg.appendChild(el("text",{x:0,y:444,"class":"s"},"↓ le modèle apprend surtout à baisser le niveau"));
-    svg.appendChild(el("text",{x:234*k+2,y:444,"class":"s"},"↑ une minorité de paires le fait monter"));
+    svg.appendChild(el("rect",{x:0,y:318,width:1156,height:126,rx:14,"class":"tbad"}));
+    svg.appendChild(el("use",{href:"#i-cross","class":"ic bad",x:26,y:352,width:48,height:48}));
+    svg.appendChild(el("text",{x:100,y:367,"class":"b","style":"font-size:30px"},"Version DPO non retenue"));
+    svg.appendChild(el("text",{x:100,y:409,"class":"s"},"Le gain sur le sur-triage ne compense pas la perte de rappel urgent."));
   })();
 
   /* 13 · Cent urgences, neuf manquées */
@@ -717,9 +675,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   function show(i,fromHash){
     cur=Math.max(0,Math.min(slides.length-1,i));
     slides.forEach(function(s,j){s.hidden=j!==cur;});
-    count.textContent=(cur+1)+" / "+slides.length;
-    cue.textContent="cible "+slides[cur].getAttribute("data-t");
-    prog.style.width=((cur+1)/slides.length*100)+"%";
+    count.textContent=cur<15 ? (cur+1)+" / 15" : "Annexe "+(cur-14)+" / 4";
+    cue.textContent=(cur<15?"cible ":"")+slides[cur].getAttribute("data-t");
+    prog.style.width=(Math.min(cur+1,15)/15*100)+"%";
     prev.disabled=cur===0;next.disabled=cur===slides.length-1;
     if(!fromHash){try{history.replaceState(null,"","#d-"+(cur+1));}catch(e){}}
     if(cur>0)startClock();
@@ -732,8 +690,9 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
     var k=e.key;
     if(k==="ArrowRight"||k==="PageDown"||k===" "||k==="Enter"){e.preventDefault();show(cur+1);}
     else if(k==="ArrowLeft"||k==="PageUp"||k==="Backspace"){e.preventDefault();show(cur-1);}
+    else if(k==="a"||k==="A"){show(cur<15?15:14);}
     else if(k==="Home"){show(0);}
-    else if(k==="End"){show(slides.length-1);}
+    else if(k==="End"){show(14);}
     else if(k==="f"||k==="F"){fullscreen();}
   });
   var tx=null;

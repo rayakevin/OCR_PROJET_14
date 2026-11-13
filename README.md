@@ -8,6 +8,7 @@ format et conserve une trace. Toute proposition nécessite une validation humain
 **Cas fictifs uniquement. Le projet ne dispose pas de validation clinique indépendante.**
 
 - [Démonstration publique sur Hugging Face](https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en)
+- [Page explicative interactive](output/Page_explicative_projet.html) : données, SFT, DPO et service ; télécharger le HTML pour utiliser les interactions.
 - [Rapport technique](reports/rapport_technique_ocr14.md) · [PDF](output/pdf/rapport_technique_ocr14.pdf)
 - [Tests et déploiement GitHub Actions](https://github.com/rayakevin/OCR_PROJET_14/actions/workflows/poc.yml)
 
@@ -81,7 +82,8 @@ Les paires traduites sont corrélées et les références ne sont pas des labels
 |---|---|
 | `data_ingestion/` | Exploration, annotation, transformation et partitions |
 | [training/](training/README.md) | SFT LoRA, préparation des préférences et DPO |
-| [evaluation/](evaluation/README.md) | Inférence, métriques, protocoles et notebooks Colab |
+| [evaluation/](evaluation/README.md) | Inférence, métriques et protocoles |
+| [notebooks/](notebooks/README.md) | Cinq carnets explicatifs et lanceur Colab 06 |
 | [serving/](serving/README.md) | API, interface, audit, vLLM et Space |
 | `tests/` | Tests CPU du pipeline et des contrats de service |
 | `.github/workflows/` | Vérification et déploiement automatisés |
@@ -118,7 +120,7 @@ avec le notebook dans la remise, à copier dans `MyDrive/OCR_PROJET_14/`.
 Le pipeline GitHub Actions exécute les tests Pytest, construit l’image Docker,
 puis publie une liste contrôlée de fichiers sur le Space. Le déploiement dépend
 du succès des vérifications ; le secret `HF_TOKEN` reste dans GitHub Actions.
-La suite de 52 tests a réussi lors de la vérification du 12 novembre 2026.
+La suite comprend 52 tests ; le résultat de chaque publication est consultable dans GitHub Actions.
 
 L’API vLLM publique a été vérifiée le 10 novembre sur L4 avec le SFT mixte :
 médiane HTTP de 1,23 s sur trois cas fictifs et huit appels simultanés en 1,54 s.

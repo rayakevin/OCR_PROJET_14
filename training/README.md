@@ -1,118 +1,47 @@
-# Entraînement LoRA
+# Entraînement SFT et DPO
 
-Les carnets [SFT](../notebooks/03_sft.ipynb) et [DPO](../notebooks/04_dpo.ipynb)
-présentent les choix et résultats. Ce guide détaille les scripts et les essais historiques.
+Les [carnets SFT](../notebooks/03_sft.ipynb) et [DPO](../notebooks/04_dpo.ipynb) présentent les hypothèses, résultats et décisions. Le [rapport](../reports/rapport_technique_ocr14.md) en donne l'analyse technique.
 
-Le script `entrainer_lora.py` entraîne le même adaptateur en supervisant uniquement les tokens de la réponse `assistant`. Il sauvegarde l'adaptateur dans `models/` et trace les paramètres et les métriques dans MLflow.
+## Modèle retenu
+
+Le SFT mixte époque 3 est le candidat de démonstration. Il apprend conjointement sur 2 098 QA et 1 888 triages, depuis Qwen3-1.7B-Base avec un nouvel adaptateur LoRA. Il conserve mieux la QA que le SFT successif, mais retrouve moins d'urgences : 91 contre 95 sur 100 en validation. Le test indépendant concerne uniquement le successif.
+
+| Paramètre mixte | Valeur |
+|---|---|
+| Socle figé | Qwen/Qwen3-1.7B-Base |
+| Révision | ea980cb0a6c2ae4b936e82123acc929f1cec04c1 |
+| LoRA | Rang 16, alpha 32 ; 17 432 576 paramètres |
+| Entraînement | Trois époques, batch effectif 16, BF16, seed 3407 |
+| Taux maximal / warmup | 0,0001 / 20 pas |
+| Contexte maximal | 5 120 tokens |
+| Checkpoints | 250, 500, 750 pas ; époque 3 retenue |
+
+Le manifeste `../serving/modele.json` identifie l'adaptateur servi. L'adaptateur seul ne contient pas le socle.
+
+## Scripts et format
+
+`entrainer_lora.py` supervise uniquement les tokens de la réponse assistant et conserve les paramètres et métriques dans MLflow. `format_sft.py` partage le format du prompt avec l'inférence et ajoute l'EOS natif. Les exemples trop longs sont refusés plutôt que tronqués silencieusement.
+
+Exemple de lancement QA depuis la racine, avec les données disponibles localement :
 
 ```bash
 uv run python training/entrainer_lora.py \
   --revision ea980cb0a6c2ae4b936e82123acc929f1cec04c1 \
   --output models/phase1_qa_eos_v2 --max-length 5120
-mlflow ui --backend-store-uri sqlite:///mlflow.db
 ```
 
-Avant le run complet, un pilote limite volontairement les données et le nombre de pas.
+Pour poursuivre un adaptateur sur le triage, le script accepte `--adapter`, `--phase phase2_triage` et les chemins `--train` / `--validation`. Les options exactes sont accessibles avec `--help`. Les jeux d'entraînement et les poids restent hors Git.
 
-## Correction du protocole SFT
+## Enseignements des variantes
 
-Je partage le prompt avec l'inférence dans `format_sft.py`, y compris les balises
-de réflexion vide du tokenizer. Seule la réponse contribue à la loss ; elle se
-termine par l'EOS natif du socle. Je refuse les exemples trop longs plutôt que
-de couper leur réponse ou leur cas. Les jeux QA actuels tiennent dans 5 120 tokens.
+Le SFT successif poursuit le même LoRA : QA puis triage. Il spécialise le classement, mais la QA se dégrade fortement. Un rappel partiel de QA a conduit à tester le mélange complet. La poursuite du mixte au-delà de l'époque 3 utilise un nouvel optimiseur et un taux réduit ; aucun checkpoint ne domine tous les critères. Ces essais sont résumés dans le carnet 03, leurs journaux détaillés restant archivés localement.
 
-Le notebook journal Colab archivé (archives locales non publiées) conserve les résultats initiaux,
-explique les défauts constatés et présente le pilote corrigé. Les nouveaux runs
-utilisent un autre dossier. Le protocole sauvegarde les identifiants sélectionnés,
-les empreintes, les versions, la révision du socle et les paramètres MLflow.
+## DPO
 
-Pour la seconde phase, `--adapter` poursuit l'adaptateur corrigé, avec
-`--phase phase2_triage` et les chemins `--train` / `--validation` correspondants.
-Cette commande ne doit pas réutiliser l'ancien adaptateur au format incohérent.
-L'inférence corrigée utilise `--stop-token eos` et enregistre la cause d'arrêt.
+`preparer_dpo.py` prépare les préférences générales. Le pilote généraliste (256/64 paires, 32 pas) améliore la loss sans corriger les cinq sous-triages critiques du successif. Ses poids finaux ne sont pas disponibles dans la sauvegarde récupérée.
 
-## Essai de rappel QA en phase 2
+`preparer_dpo_triage.py` construit ensuite des paires à partir des erreurs du mixte sur le train triage uniquement. Le contrôle interne DPO garde FR/EN ensemble et reste issu du train SFT ; il ne mesure pas une généralisation indépendante. La validation métier utilise les 500 entrées v3 séparées.
 
-Après la baisse des scores QA, je teste dans la section 12 du notebook un mélange
-de 1 900 triages et 212 QA du train (106 par langue), tirées avec la seed 3407.
-Je repars de la phase 1 corrigée : 357 étapes, batch effectif 16, learning rate
-0,0001, `--warmup-steps 20` et checkpoints tous les 120 pas. La limite de contexte
-passe à 5 120 pour conserver les réponses QA entières. Les tokens de réponse QA
-représentent environ 28 % du mélange, malgré seulement 10 % des exemples.
+`entrainer_dpo.py` conserve une référence SFT figée. Le pilote ciblé utilise 355 paires d'entraînement, 85 de contrôle, 32 pas, un taux de 2e-6, beta 0,1 et un batch effectif de 16. Les checkpoints 16/32 réduisent le sur-triage mais abaissent le rappel urgent à 87/83 %. Aucun n'est déployé.
 
-L'audit a détecté un doublon de prompt entre train et validation triage sous des
-identifiants différents. J'exclus ses deux versions linguistiques du nouvel
-entraînement, sans réécrire les partitions historiques. Je compare les scores
-sur les 238 entrées puis sur les 236 entrées sans la paire contaminée. Un autre
-doublon validation/test est ensuite écarté des partitions v3. Le notebook
-conserve les identifiants et les empreintes de cet audit.
-
-Le contrôle préliminaire du DPO relève aussi quatre prompts du train DPO présents
-dans la validation ou le test QA. Ils sont retirés dans les partitions v3 avant le DPO. Je vérifie l'adéquation des préférences au triage ; les scores SFT ne justifient
-pas à eux seuls le lancement d'un DPO généraliste.
-
-Les calculs GPU sont exécutés sur Colab. Les résultats, les adaptateurs et le suivi
-sont sauvegardés dans Drive avant de libérer l’environnement.
-
-## Partitions v3 et pilote DPO
-
-Je reconstruis la version nettoyée avec `data_ingestion/figer_partitions.py`.
-Les fichiers historiques restent disponibles ; les nouvelles partitions, leurs
-empreintes et les exclusions sont dans `data/processed/partitions_v3`.
-Le train triage contient 1 888 entrées, la validation 238 et le test figé
-226. La QA reste inchangée. Les exclusions portent toujours sur la paire de langues.
-
-Je reprends seulement le SFT de triage avec 357 pas et les mêmes paramètres.
-`training/preparer_dpo.py` construit ensuite un pilote de 256 paires de train et
-64 de validation, stratifié par catégorie de préférence. Une seule paire du
-train dépasse 4 096 tokens : elle est écartée de l'éligibilité, jamais tronquée.
-
-`training/entrainer_dpo.py` utilise TRL 1.17.1 pendant 32 pas. La référence est une
-copie figée du LoRA SFT initial ; désactiver ce LoRA reviendrait à utiliser le socle
-comme référence et changerait l'expérience. Je vérifie les empreintes des poids,
-les frontières des tokens et l'EOS. Un test miniature CPU vérifie la mise à jour
-de la politique et l'immobilité de la référence avant les calculs Colab.
-
-Le notebook 03 intègre les scripts, les commandes et les résultats au fil de leur
-obtention. Un pilote DPO valide un pipeline et donne un premier signal ; il ne
-constitue ni un entraînement complet ni une validation clinique.
-
-Le pilote exécuté sur Colab améliore la perte DPO de validation (0,6931 →
-0,5361), mais pas la macro-F1 des priorités (0,7715 → 0,7674). Les cinq
-sous-triages critiques persistent. À cette étape, je conserve le SFT v3 comme candidat
-principal du POC et le DPO comme variante expérimentale. Le SFT mixte lui succède ensuite. La section 19 du
-notebook détaille aussi l'écart entre langues et la perte de capacité QA.
-Les résultats et les 1 000 prédictions comparatives sont disponibles dans
-`data/evaluation/colab_sft_dpo_v3`, en complément de la sauvegarde Drive.
-
-## SFT mixte puis DPO ciblé (6 novembre)
-
-Le notebook 07 part du socle avec un nouveau LoRA sur l'union QA/triage. L'époque 3
-est retenue et déployée depuis le 10 novembre ; les sept époques supplémentaires,
-avec un nouvel optimiseur et un taux réduit, n'apportent pas de gain global.
-
-Le notebook 08 prépare une autre intervention : `preparer_dpo_triage.py` transforme
-les erreurs réelles du SFT mixte sur le **train triage uniquement** en préférences.
-La référence silver reste inchangée ; la réponse rejetée est la génération effective.
-Les sorties invalides et les troncatures sont exclues. Je refuse un pilote sans
-sous-triages critiques et sur-triages, plutôt que d'inventer des erreurs.
-
-Le contrôle interne DPO représente 20 % des groupes de cas, FR/EN indissociables.
-Ces cas ont déjà été vus en SFT : cette loss ne mesure pas la généralisation.
-Le pilote poursuit l'époque 3 pendant 32 pas, LR 2e-6, beta 0,1, microbatch 1,
-accumulation 16. Je mesure séparément QA et triage aux pas 16 et 32.
-Le script conserve aussi son ancien comportement par défaut pour les expériences historiques.
-
-Je vérifie la référence figée, les SHA256, le format et les frontières de tokens.
-Les tests CPU vérifient le pipeline ; ils ne préjugent pas des scores obtenus sur GPU.
-Le checkpoint sauvegardé dans `adapter/` suit la loss de préférence : le choix
-métier repose sur les deux checkpoints explicitement évalués, pas sur ce nom de dossier.
-
-
-## Décision après le DPO ciblé
-
-Le run du 6 novembre est terminé : 355/85 paires, 32 pas. Sur validation,
-le rappel urgent passe de 91 % pour le SFT mixte réévalué à 87 % puis 83 %,
-et la macro-F1 de 0,7875 à 0,7457 puis 0,7373. Je ne retiens aucun de ces DPO.
-Les 1 500 prédictions, six rapports, poids et états d’entraînement sont récupérés ;
-95 empreintes correspondent. Le notebook 08 conserve le bilan et les limites.
+La sélection par loss du dossier `adapter/` ne remplace pas la comparaison métier des checkpoints. Les essais CPU vérifient les contrats et la référence figée ; ils ne valident pas les performances cliniques.

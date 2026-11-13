@@ -8,7 +8,10 @@ def document():
     """Insère les résultats vérifiés dans la page, sans charger de ressource externe."""
     dossier = Path(__file__).with_suffix('')
     donnees = (dossier / 'resultats.json').read_text(encoding='utf-8').replace('<', '\\u003c')
-    return (dossier / 'index.html').read_text(encoding='utf-8').replace('__RESULTATS__', donnees)
+    page = (dossier / 'index.html').read_text(encoding='utf-8')
+    for marqueur, fichier in [('__STYLE__', 'style.css'), ('__SCRIPT__', 'script.js')]:
+        page = page.replace(marqueur, (dossier / fichier).read_text(encoding='utf-8'))
+    return page.replace('__RESULTATS__', donnees)
 
 
 def iframe():

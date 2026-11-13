@@ -62,128 +62,57 @@ soignants. Ces limites excluent une revendication de conformité RGPD ou un usag
 avec des données de patients. Les logs du serveur vLLM ne doivent pas contenir
 les prompts. Une panne de journal bloque la délivrance d'une proposition.
 
-## Vérification sans GPU
+## Vérification et déploiement
+
+Depuis la racine :
 
 ```bash
-python -m pip install -r serving/requirements.txt
-python -m unittest tests.test_serving -v
+python -m pip install -r serving/requirements.txt pytest scikit-learn
+python -m pytest tests/test_serving.py tests/test_space.py -v
 docker build -f serving/Dockerfile -t ocr14-api:local .
 ```
 
-Le notebook POC historique (archives locales non publiées) exécute les vérifications sur CPU et
-explique les limites. Les doubles de test sont explicitement identifiés : leurs
-résultats ne sont pas des prédictions du modèle. Le test du template emploie un
-vrai tokenizer miniature pour détecter une dépendance manquante à Jinja2.
+Les tests utilisent des doubles sur CPU ; ils ne génèrent pas de réponses du modèle.
+Le workflow `.github/workflows/poc.yml` exécute la suite complète et construit
+l'image, puis publie le Space après succès sur main. Le secret `HF_TOKEN` reste
+dans Actions. L'API GPU n'est pas déployée automatiquement par ce workflow.
 
-## Reproduire la vérification vLLM sur un environnement GPU
+## Space public
 
-Je récupère l'adaptateur SFT mixte époque 3 à la racine du dépôt
-`rayakevin/ocr14-triage-lora-experiences`, ou dans le dossier `adapter/` du Space.
-Son fichier de poids doit avoir le hash enregistré dans `modele.json`. Je ne le
-remplace pas par un autre checkpoint. La vérification du 5 novembre utilisait le
-SFT successif (`experiences/sft_dpo_v3_20261105/sft_triage/adapter` sur Drive).
-
-Je définis `OCR14_API_KEY` et `VLLM_API_KEY` (24 caractères au minimum), ainsi que
-`OCR14_ADAPTER_DIR` (chemin absolu du dossier vérifié), dans l'environnement ou
-un fichier privé passé à `docker compose --env-file`. Je ne les versionne pas.
-
-```bash
-docker compose -f serving/compose.yaml --profile gpu up --build -d
-python -m serving.verifier_endpoint --url http://127.0.0.1:8080 \
-  --output data/evaluation/poc/verification_endpoint.json
-docker compose -f serving/compose.yaml --profile gpu down
-```
-
-L'API écoute uniquement en boucle locale ; vLLM n'est pas publié sur l'hôte.
-Les volumes conservent l'audit et les caches. Le script de mesure ne teste ni
-la charge, ni la pertinence clinique ; la première requête peut inclure le
-chargement du tokenizer. Les partitions de test final restent distinctes de ces cas fictifs. Cet essai
-porte sur le contrat technique et ne mesure pas la qualité clinique.
-
-Le workflow `.github/workflows/poc.yml` exécute la suite Pytest (52 tests) et construit Docker.
-Sur `main`, il publie ensuite une liste fermée de fichiers dans le Space existant
-et vérifie sa révision en fonctionnement. Le secret `HF_TOKEN` reste dans Actions.
-La [première exécution complète](https://github.com/rayakevin/OCR_PROJET_14/actions/runs/42074793162)
-est réussie. La vérification du serveur vLLM est également exécutée sur une VM Colab temporaire.
-
-## Démonstration gratuite sur Hugging Face
-
-Le 5 novembre 2026, la création du
-[Space OCR14](https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en) a été
-acceptée sur ZeroGPU. Le Space est démarré et deux parcours fictifs FR/EN ont
-produit une réponse réelle avec une trace JSON récupérée. Aucun abonnement ni
-matériel payant n'a été demandé.
-[Conditions et compatibilité ZeroGPU](https://huggingface.co/docs/hub/spaces-zerogpu).
-
-Depuis le 10 novembre, le Space sert le SFT mixte époque 3 ; un parcours fictif
-vérifie l'inférence réelle après la bascule. Cette variante utilise Transformers/PEFT
-et le même LoRA que l'API, vérifié par SHA256. Le runtime ZeroGPU emploie PyTorch 2.13.0 ; je ne présume
-pas d'une identité numérique avec l'environnement Colab. La voie FastAPI/vLLM reste distincte de cet hébergement Transformers ;
-elle a été vérifiée en HTTPS public sur L4 le 10 novembre.
-Les traces restent isolées par session et sont téléchargeables en JSON. Le cache
-temporaire est nettoyé après une heure ; télécharger la trace assure sa conservation
-locale. Cela ne remplace pas un journal hospitalier persistant.
+Le [Space OCR14](https://huggingface.co/spaces/rayakevin/ocr14-triage-fr-en)
+utilise Transformers/PEFT et ZeroGPU avec le SFT mixte époque 3. Les traces sont
+isolées par session et exportables en JSON ; elles ne remplacent pas un journal
+persistant. Les quotas et l'attribution du GPU influencent la latence.
 
 | Fichier dans `space/` | Rôle |
 |---|---|
-| `parcours.py` | Collecte sur CPU, état par session et trace des erreurs |
-| `interface.py` | Formulaire bilingue et export de la trace |
-| `app.py` | Chargement du LoRA vérifié ; GPU réservé à la génération |
-| `publier.py` | Paquet de fichiers autorisés, sans secrets ni corpus ; création ZeroGPU |
-| `requirements.txt` et `README.md` | Dépendances figées et configuration du Space |
+| `parcours.py` | Questionnaire et état de session |
+| `interface.py` | Formulaire bilingue et export |
+| `app.py` | Chargement du LoRA et génération ZeroGPU |
+| `publier.py`, `deployer.py` | Paquet autorisé, publication et contrôle du Space |
+| `support.py`, `support/` | Page explicative autonome : HTML, CSS, JavaScript et résultats agrégés |
 
-Les tests `tests/test_space.py` vérifient sur CPU les deux langues, l'appel final
-unique, l'isolation, les entrées invalides, les abstentions et le refus d'autres
-poids. La construction de l'interface est également vérifiée avec Gradio 6.31.0.
+La page explicative comporte cinq chapitres : vue d'ensemble, données, SFT, DPO
+et service. Ses simulations sont locales, sans appel au modèle. Le générateur
+intègre styles, script et résultats dans un HTML autonome également fourni sous
+`output/Page_explicative_projet.html`.
 
-Deux corrections spécifiques à l'hébergement ont été nécessaires : Pydantic
-2.12.5 pour les extensions Gradio ajoutées par Spaces, et lecture du LoRA sur
-CPU avant la préparation CUDA de ZeroGPU. Les 17 tests passent aussi avec cette
-version de Pydantic.
+## Endpoint vLLM sur GPU distant
 
-Sur les deux essais du navigateur, l'étape finale a pris 5,115 s en français
-(68 tokens) et 3,870 s en anglais (53 tokens). Cette durée côté serveur inclut
-l'appel à ZeroGPU ; ce n'est ni une mesure isolée du calcul GPU, ni une garantie
-de latence. Les traces et le commit publié sont conservés dans
-`data/evaluation/poc/verification_space_reelle.json` et
-`data/deployment/hf_space_v1.publication.json`. Le test final du corpus est mesuré séparément, après sélection sur validation.
+Le [notebook 06](../notebooks/06_lancer_demo_colab.ipynb) démarre vLLM et FastAPI,
+expose une URL HTTPS temporaire, vérifie les appels et sauvegarde les traces.
+Il nécessite un GPU compatible et le paquet `ocr14_endpoint_soutenance_20261110.zip`,
+fourni dans la remise, dans `MyDrive/OCR_PROJET_14/`. La L4 a servi aux mesures ;
+elle n'est pas imposée pour une nouvelle démonstration.
 
-Références techniques : [LoRA avec vLLM](https://docs.vllm.ai/en/v0.32.0/features/lora/),
-[options du serveur](https://docs.vllm.ai/en/v0.32.0/cli/serve/),
-[tests FastAPI](https://fastapi.tiangolo.com/tutorial/testing/).
+Activer `LANCER_ENDPOINT`, saisir une clé temporaire d'au moins 24 caractères
+et attendre la vérification HTTPS avant d'utiliser `DEMO_URL`. La cellule reste
+active pendant le service ; l'arrêt automatique intervient après 60 minutes.
+Les secrets ne doivent pas être copiés dans le notebook sauvegardé.
 
-### Langue et réglages
+La vérification publique du 10 novembre observe une médiane de 1,23 s sur trois
+appels et huit requêtes simultanées en 1,54 s. Ce petit essai ne démontre pas la
+tenue en charge prolongée. Le Space et cet endpoint sont deux voies distinctes.
 
-Je place le sélecteur FR/EN en en-tête : il traduit les textes et commence un nouveau cas.
-Le panneau Réglages propose le questionnaire guidé ou la saisie d’un cas complet,
-ainsi que l’affichage facultatif des détails techniques. Je conserve les mêmes
-paramètres de génération. Le mode direct utilise la présentation saisie sans
-ajouter de réponses aux questions manquantes.
-
-Les traductions et changements de mode ont été vérifiés sur le Space. Le nouvel
-essai de génération directe a atteint le quota invité ZeroGPU : l’interface
-a affiché une indisponibilité, sans attribuer de priorité. Le parcours direct
-est testé sur CPU avec un double ; les deux inférences réelles antérieures
-restent les preuves du chargement et de la génération par le modèle.
-
-### Vérification ponctuelle sur Colab
-
-Le notebook test final archivé (archives locales non publiées) prépare un environnement
-vLLM 0.32.0 séparé de celui de l'évaluation Transformers. `verifier_colab.py`
-contrôle le LoRA, démarre vLLM et FastAPI, mesure trois cas fictifs, vérifie les
-traces et les refus HTTP, puis arrête les processus. Le notebook sauvegarde les
-résultats et synchronise Drive avant de rendre le GPU.
-
-L'exécution du notebook reprise vLLM archivée (archives locales non publiées) est confirmée sur A100
-40 Go. Après le conflit de port 8080, Uvicorn reçoit une socket réservée sur un
-port libre. Trois requêtes et leurs traces sont vérifiées : 6,935 s, 0,385 s et
-0,514 s. L'anglais produit « delayed emergency », hors contrat : l'API s'abstient
-et demande une revue humaine. Les contrôles 401, 422 et cas incomplet passent.
-Ces appels du 5 novembre sont internes à la VM. Le lanceur 06 ajoute une
-exposition HTTPS temporaire, vérifiée le 10 novembre sur L4 avec le SFT mixte
-(médiane 1,23 s sur trois appels ; huit appels simultanés en 1,54 s).
-
-Le lancement Colab nécessite le paquet `ocr14_endpoint_soutenance_20261110.zip`,
-fourni dans la remise avec le notebook, dans `MyDrive/OCR_PROJET_14/`.
-L’URL change à chaque lancement ; l’arrêt est automatique après 60 minutes.
-Le Space public conserve Transformers et ne fournit pas un endpoint vLLM permanent.
+Références : [LoRA avec vLLM](https://docs.vllm.ai/en/v0.32.0/features/lora/),
+[ZeroGPU](https://huggingface.co/docs/hub/spaces-zerogpu).

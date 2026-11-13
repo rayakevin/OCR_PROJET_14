@@ -14,6 +14,7 @@ FICHIERS = ('serving/__init__.py', 'serving/domaine.py', 'serving/modele.json',
             'serving/space/__init__.py', 'serving/space/interface.py',
             'serving/space/parcours.py', 'training/format_sft.py',
             'serving/space/support.py', 'serving/space/support/index.html',
+            'serving/space/support/style.css', 'serving/space/support/script.js',
             'serving/space/support/resultats.json', 'output/pdf/rapport_technique_ocr14.pdf')
 
 
